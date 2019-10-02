@@ -1,0 +1,164 @@
+---
+title: "First_nucleotide_preferences"
+author: "Chenxin Li"
+date: "Sep 19, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(stringr)
+library(RColorBrewer)
+library(svglite)
+```
+
+#1st nucleotide preferences by length
+```{r}
+first_n <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/FirstN_data.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+colnames(first_n)[1] <- "key"
+colnames(first_n)[4] <- "U"
+first_n %>% head(10)
+```
+
+```{r}
+first_n_l <- first_n %>% 
+  mutate(sample_type = case_when(
+    str_detect(key, "egg_2") ~ "egg",
+    str_detect(key, "seedling_2") ~ "seedling",
+    str_detect(key, "sperm_2") ~ "sperm",
+    str_detect(key, "ovary_2") ~ "ovary"
+  )) %>% 
+  mutate(length = case_when(
+    str_detect(key, "21") ~ 21,
+    str_detect(key, "22") ~ 22,
+    str_detect(key, "24") ~ 24
+  )) %>% 
+  mutate(bin = case_when(
+    str_detect(key, "egg_specific") ~ "egg-\nspecific\nloci",
+    str_detect(key, "seedling_specific") ~ "seedling-\nspecific\nloci",
+    str_detect(key, "sperm_specific") ~ "sperm-\nspecific\nloci",
+    str_detect(key, "intersect") ~ "intersect.",
+    str_detect(key, "egg.fastqc")  ~ "egg",
+    str_detect(key, "seedling.fastqc") ~ "seedling",
+    str_detect(key, "sperm.fastqc") ~ "sperm",
+  )) %>% 
+  gather("nucleotide", "proportion", 2:5) %>% 
+  mutate(nt = as.factor(length)) %>% 
+  mutate(nucleotide = factor(nucleotide, levels = c("A", "C", "G", "U"))) %>% 
+  group_by(sample_type, length) %>% 
+  arrange(desc(nucleotide)) %>% 
+  ungroup()
+
+
+first_n_l
+#first_n_l[order(first_n_l$nucleotide, decreasing = T), ]
+```
+
+```{r}
+axis_line <- data.frame(
+  sample_type = c(-Inf),
+  nt = c(21)
+)
+
+axis_line
+```
+
+
+```{r} 
+#egg sperm seedling only in egg, sperm and seedling loci (not specific)
+first_n_l  %>%
+  filter(bin != "intersect.") %>% 
+  filter(str_detect(bin, "specific") == F) %>% 
+  filter(sample_type == bin) %>% 
+  ggplot(aes(x = sample_type, y = proportion)) +
+  geom_vline(data = axis_line, aes(xintercept = sample_type), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  facet_grid(. ~ nt, scales = "free") +
+  geom_bar(stat = "identity", aes(fill = nucleotide), position = position_stack(reverse = T)) +
+  labs(x = NULL,
+       fill = NULL, 
+       y = NULL) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal()+
+  theme(legend.position = "bottom") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black", angle = 45, hjust = 1)) +
+  theme(axis.text.y = element_text(colour="black"))
+
+ggsave(filename = "first_nucleotide_ECSDSP.svg", width = 3.35, height = 4)
+ggsave(filename = "first_nucleotide_ECSDSP.png", width = 3.35, height = 4)
+```
+
+
+#by tissue specificity
+```{r}
+first_n_l
+```
+
+
+```{r}
+first_by_bin_l <- first_n_l %>% 
+  filter(str_detect(bin, "specific|intersect.")) %>% 
+  mutate(bin = factor(bin, levels = c(
+    "egg-\nspecific\nloci", 
+    "seedling-\nspecific\nloci",
+    "sperm-\nspecific\nloci",
+    "intersect."
+  ))) %>%
+  group_by(sample_type, length) %>% 
+  arrange(desc(nucleotide)) %>% 
+  ungroup()
+
+first_by_bin_l
+```
+
+```{r}
+axis_line2 <- data.frame(
+  sample_type = c(-Inf),
+  bin = c("egg-\nspecific\nloci"),
+  nt = c("24")
+)
+
+axis_line2
+```
+
+```{r}
+first_by_bin_l %>%
+  filter(length == 24) %>% 
+  ggplot(aes(x = sample_type, y = proportion)) +
+  facet_grid(. ~ bin, scales = "free", space = "free") +
+  geom_vline(data = axis_line2, aes(xintercept = sample_type), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_bar(stat = "identity", aes(fill = nucleotide), position = position_stack(reverse = T)) +
+  labs(x = NULL,
+       y = "% reads",
+       fill = NULL) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal()+
+  theme(legend.position = "bottom") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black", angle = 45, hjust = 1)) +
+  theme(axis.text.y = element_text(colour="black"))
+
+ggsave(filename = "first_nucleotide_by_specificity.svg", width = 5, height = 5)
+ggsave(filename = "first_nucleotide_by_specificity.png", width = 5, height = 5)
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

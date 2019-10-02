@@ -1,0 +1,523 @@
+---
+title: "uniquely mapped TE scatter plots"
+author: "Chenxin Li"
+date: "Sep 16, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+```
+
+#load data
+```{r}
+g24 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/TE_unique_siRNA_mRNA_cov/Gypsy_24nt_unique_siRNA_counts.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+t24 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/TE_unique_siRNA_mRNA_cov/TIR_24nt_unique_siRNA_counts.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+gm <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/TE_unique_siRNA_mRNA_cov/Gypsy_mRNA_counts.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+
+tm <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/TE_unique_siRNA_mRNA_cov/non-CACTA_DNA_mRNA_counts.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+```
+```{r}
+sample_des <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/sample_des_revision.xlsx")
+
+smRNA_comp <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/code and output/smRNA_comp.csv")
+
+total_siRNA_length <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/length_profiel_fig2/lengths_summary.bam.siRNAs.sam.txt", 
+    "\t", escape_double = FALSE, trim_ws = TRUE)
+```
+```{r}
+colnames(total_siRNA_length)[1] <- "library"
+total_siRNA_length <- total_siRNA_length %>% 
+    mutate(sample_ID = case_when(
+    str_detect(library, "sperm.1") ~ "BS1", #1
+    str_detect(library, "Sperm2") ~ "BS2",  #2
+    str_detect(library, "Sperm4a") ~ "BS4a",  #3
+    str_detect(library, "sperm4b") ~ "BS4b",  #4
+    str_detect(library, "sperm6a") ~ "BS6a",  #5
+    str_detect(library, "sperm6b") ~ "BS6b",  #6
+    str_detect(library, "sperm.5b") ~ "SP5b", #7
+    str_detect(library, "sperm.5c") ~ "SP5c", #8
+    str_detect(library, "Bulk.15") ~ "B15",   #9
+    str_detect(library, "Bulk.20") ~ "B20",   #10
+    str_detect(library, "Bulk.25") ~ "B25",   #11
+    str_detect(library, "seedling4") ~ "SD4", #12
+    str_detect(library, "egg.9a") ~ "E9a",    #13
+    str_detect(library, "egg.9b") ~ "E9b",    #14
+    str_detect(library, "egg.9c") ~ "E9c",    #15
+    str_detect(library, "eggcell4") ~ "E4",   #16
+    str_detect(library, "eggcell3") ~ "E3",   #17
+    str_detect(library, "eggcell2") ~ "E2",   #18
+    str_detect(library, "ovary.no.egg.1a") ~ "OV1a",    #19
+    str_detect(library, "ovary.no.egg.1b") ~ "OV1b",    #20
+    str_detect(library, "Ovarynoegg2") ~ "OV2",         #21
+    str_detect(library, "SRR57") ~ "root",              #22
+    str_detect(library, "ab_control") ~ "ddm1_con",     #23
+    str_detect(library, "ddm1ab") ~ "ddm1",             #24
+    str_detect(library, "drm2-T-DNA_control") ~ "drm2_con",  #25 drm2-T-DNA_control.fastq
+    str_detect(library, "drm2-T-DNA.fas") ~ "drm2",          #26   
+    str_detect(library, "SRR2544786") ~ "em_dry", #27  
+    str_detect(library, "SRR5049778") ~ "an_pre",  #28
+    str_detect(library, "SRR5049779") ~ "an_mei",  #29
+    str_detect(library, "SRR5049780") ~ "an_mic",  #30
+    str_detect(library, "SRR5049781") ~ "an_bi",   #31
+    str_detect(library, "SRR5049786") ~ "ov_1st",  #32
+    str_detect(library, "SRR5049787") ~ "ov_2nd",  #33
+    str_detect(library, "SRR5049788") ~ "ov_3rd",  #34
+    str_detect(library, "SRR5049789") ~ "ov_4th",  #35
+    str_detect(library, "S3_1") ~ "S3_1",          #36
+    str_detect(library, "S3_2") ~ "S3_2",          #37
+    str_detect(library, "S3_3") ~ "S3_3",          #38
+    str_detect(library, "S5_1") ~ "S5_1",          #39
+    str_detect(library, "S5_2") ~ "S5_2",          #40
+    str_detect(library, "S5_3") ~ "S5_3",          #41
+    str_detect(library, "S7_1") ~ "S7_1",          #42
+    str_detect(library, "S7_2") ~ "S7_2",          #43
+    str_detect(library, "S7_3") ~ "S7_3",          #44
+    str_detect(library, "SRR2544787") ~ "em_12h",  #45
+    str_detect(library, "SRR2544788") ~ "em_24h",  #46
+    str_detect(library, "SRR771501") ~ "em_7DAF",  #47
+    str_detect(library, "SRR771500") ~ "en_7DAF"   #48          
+  ))
+```
+
+```{r}
+sample_des_size <- smRNA_comp %>% 
+  inner_join(sample_des, by = "sample_ID") %>% 
+  select(-library) %>% 
+  full_join(total_siRNA_length, by = "sample_ID")
+
+sample_des_size %>% head()
+```
+```{r}
+colnames(g24)
+```
+
+#arrange siRNA data
+```{r}
+#arrange siRNA tables-gypsy
+g24_l <- g24 %>% 
+  mutate(tag = paste(X1, X4, X5, sep = "-")) %>% 
+  mutate(class = "Gypsy") %>% 
+  mutate(kb =(X5 - X4) / 1000) %>% 
+  select(-X1, -X2, -X3, -X4, -X5, -X6, -X7, -X8, -X9) %>% 
+  gather("library", "count", 1:21) %>% 
+  mutate(sample_ID = case_when(
+    str_detect(library, "sperm-1") ~ "BS1",
+    str_detect(library, "Sperm2") ~ "BS2",
+    str_detect(library, "Sperm4a") ~ "BS4a",
+    str_detect(library, "sperm4b") ~ "BS4b",
+    str_detect(library, "sperm6a") ~ "BS6a",
+    str_detect(library, "sperm6b") ~ "BS6b",
+    str_detect(library, "sperm.5b") ~ "SP5b",
+    str_detect(library, "sperm.5c") ~ "SP5c",
+    str_detect(library, "Bulk-15") ~ "B15",
+    str_detect(library, "Bulk-20") ~ "B20",
+    str_detect(library, "Bulk-25") ~ "B25",
+    str_detect(library, "seedling4") ~ "SD4",
+    str_detect(library, "egg-9a") ~ "E9a",
+    str_detect(library, "egg-9b") ~ "E9b",
+    str_detect(library, "egg-9c") ~ "E9c",
+    str_detect(library, "eggcell4") ~ "E4",
+    str_detect(library, "eggcell3") ~ "E3",
+    str_detect(library, "eggcell2") ~ "E2",
+    str_detect(library, "ovary-no-egg-1a") ~ "OV1a",
+    str_detect(library, "ovary-no-egg-1b") ~ "OV1b",
+    str_detect(library, "Ovarynoegg2") ~ "OV2",
+  )) %>% 
+    inner_join(sample_des_size %>% 
+                 select(-library), by = "sample_ID") %>% 
+  mutate(nor.count = count / `total read` / kb) %>% 
+  mutate(nor.count.24 = count / `24` / kb) 
+  
+g24_l %>% head(10)
+```
+
+```{r}
+#arrange TIR data
+t24_l <- t24 %>% 
+  mutate(tag = paste(X1, X4, X5, sep = "-")) %>% 
+  mutate(class = "TIR") %>% 
+  mutate(kb =(X5 - X4) / 1000) %>% 
+  select(-X1, -X2, -X3, -X4, -X5, -X6, -X7, -X8, -X9) %>% 
+  gather("library", "count", 1:21) %>% 
+  mutate(sample_ID = case_when(
+    str_detect(library, "sperm-1") ~ "BS1",
+    str_detect(library, "Sperm2") ~ "BS2",
+    str_detect(library, "Sperm4a") ~ "BS4a",
+    str_detect(library, "sperm4b") ~ "BS4b",
+    str_detect(library, "sperm6a") ~ "BS6a",
+    str_detect(library, "sperm6b") ~ "BS6b",
+    str_detect(library, "sperm.5b") ~ "SP5b",
+    str_detect(library, "sperm.5c") ~ "SP5c",
+    str_detect(library, "Bulk-15") ~ "B15",
+    str_detect(library, "Bulk-20") ~ "B20",
+    str_detect(library, "Bulk-25") ~ "B25",
+    str_detect(library, "seedling4") ~ "SD4",
+    str_detect(library, "egg-9a") ~ "E9a",
+    str_detect(library, "egg-9b") ~ "E9b",
+    str_detect(library, "egg-9c") ~ "E9c",
+    str_detect(library, "eggcell4") ~ "E4",
+    str_detect(library, "eggcell3") ~ "E3",
+    str_detect(library, "eggcell2") ~ "E2",
+    str_detect(library, "ovary-no-egg-1a") ~ "OV1a",
+    str_detect(library, "ovary-no-egg-1b") ~ "OV1b",
+    str_detect(library, "Ovarynoegg2") ~ "OV2",
+  )) %>% 
+    inner_join(sample_des_size %>% 
+                 select(-library), by = "sample_ID") %>% 
+  mutate(nor.count = count / `total read` / kb) %>% 
+  mutate(nor.count.24 = count / `24` / kb) 
+  
+t24_l %>% head(10)
+```
+
+
+```{r}
+#summarise 
+g24_s <- g24_l %>% 
+  group_by(sample_type, genotype, tag, class) %>% 
+  summarise(mean.nor.count = mean(nor.count), mean.nor.count.24 = mean(nor.count.24)) %>% 
+  ungroup()
+
+head(g24_s, 10)
+
+t24_s <- t24_l %>% 
+  group_by(sample_type, genotype, tag, class) %>% 
+  summarise(mean.nor.count = mean(nor.count), mean.nor.count.24 = mean(nor.count.24)) %>% 
+  ungroup()
+  
+
+head(t24_s, 10)
+```
+
+```{r}
+siRNA <- rbind(g24_s, t24_s) %>% 
+  mutate(RNA_type = "24nt siRNA") 
+```
+
+
+#arrange mRNA data 
+```{r}
+#arrange mRNA tables. load metadata first
+mRNA_sample_des <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/mRNA/zg_sample_des.xlsx")
+mRNA_depth_info <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS08/TE_unique_mRNA_and_siRNA_counts_Feb21/mRNA_depth_info.xlsx")
+```
+
+```{r}
+mRNA_info <- mRNA_depth_info %>% 
+  mutate(sample_ID = case_when(
+    str_detect(library, "EC1") ~ "EC1",
+    str_detect(library, "EC2") ~ "EC2",
+    str_detect(library, "EC3") ~ "EC3",
+    str_detect(library, "Sp1") ~ "Sp1",
+    str_detect(library, "Sp2") ~ "Sp2",
+    str_detect(library, "Sp3") ~ "Sp3",
+    str_detect(library, "Ve1") ~ "Ve1",
+    str_detect(library, "Ve2") ~ "Ve2",
+    str_detect(library, "Ve3") ~ "Ve3",
+    str_detect(library, "Z2.5_rep1") ~ "Z2.5_1",
+    str_detect(library, "Z2.5_rep2") ~ "Z2.5_2",
+    str_detect(library, "Z2.5_rep3") ~ "Z2.5_3",
+    str_detect(library, "Z5_rep1") ~ "Z5_1",
+    str_detect(library, "Z5_rep2") ~ "Z5_2",
+    str_detect(library, "Z5_rep3") ~ "Z5_3",
+    str_detect(library, "Z9_rep1") ~ "Z9_1",
+    str_detect(library, "Z9_rep2") ~ "Z9_2",
+    str_detect(library, "Z9_rep3") ~ "Z9_3",
+    str_detect(library, "seedling_rep1") ~ "Seedling1",
+    str_detect(library, "seedling_rep2") ~ "Seedling2",
+    str_detect(library, "seedling_rep3") ~ "Seedling3"
+  )) %>% 
+  inner_join(mRNA_sample_des, by = "sample_ID") %>% 
+  mutate(rRNA_subtracted_total = Total - NOR)
+
+mRNA_info
+```
+```{r}
+mRNA_info_l <- mRNA_info %>% 
+  gather("features", "counts", 2:8) %>% 
+  mutate(proportion  = counts/Total) %>% 
+  mutate(proportion.rRNA.sub = counts/rRNA_subtracted_total)
+
+mRNA_info_l %>% head(10)  
+```
+```{r}
+colnames(gm)
+```
+
+
+```{r}
+#arrange Gypsy mRNA data
+gm_l <- gm %>% 
+  mutate(tag = paste(X1, X4, X5, sep = "-")) %>%
+  mutate(class = "Gypsy") %>% 
+  mutate(kb = (X5 - X4) / 1000) %>% 
+  select(-X1, -X2, -X3, -X4, -X5, -X6, -X7, -X8, -X9) %>% 
+  gather("library", "count", 1:21) %>% 
+  mutate(sample_ID = case_when(
+    str_detect(library, "EC1") ~ "EC1",
+    str_detect(library, "EC2") ~ "EC2",
+    str_detect(library, "EC3") ~ "EC3",
+    str_detect(library, "Sp1") ~ "Sp1",
+    str_detect(library, "Sp2") ~ "Sp2",
+    str_detect(library, "Sp3") ~ "Sp3",
+    str_detect(library, "Ve1") ~ "Ve1",
+    str_detect(library, "Ve2") ~ "Ve2",
+    str_detect(library, "Ve3") ~ "Ve3",
+    str_detect(library, "Z2.5_rep1") ~ "Z2.5_1",
+    str_detect(library, "Z2.5_rep2") ~ "Z2.5_2",
+    str_detect(library, "Z2.5_rep3") ~ "Z2.5_3",
+    str_detect(library, "Z5_rep1") ~ "Z5_1",
+    str_detect(library, "Z5_rep2") ~ "Z5_2",
+    str_detect(library, "Z5_rep3") ~ "Z5_3",
+    str_detect(library, "Z9_rep1") ~ "Z9_1",
+    str_detect(library, "Z9_rep2") ~ "Z9_2",
+    str_detect(library, "Z9_rep3") ~ "Z9_3",
+    str_detect(library, "seedling_rep1") ~ "Seedling1",
+    str_detect(library, "seedling_rep2") ~ "Seedling2",
+    str_detect(library, "seedling_rep3") ~ "Seedling3"
+  )) %>% 
+  inner_join(mRNA_sample_des, by = "sample_ID") %>% 
+  inner_join(mRNA_info %>% 
+               select(Total, sample_ID), by = "sample_ID") %>% 
+  mutate(nor.count = count/Total/kb)
+
+gm_l %>% head(10)
+```
+```{r}
+#arrange TIR mRNA data
+tm_l <- tm %>% 
+  mutate(tag = paste(X1, X4, X5, sep = "-")) %>%
+  mutate(class = "TIR") %>% 
+  mutate(kb = (X5 - X4) / 1000) %>% 
+  select(-X1, -X2, -X3, -X4, -X5, -X6, -X7, -X8, -X9) %>% 
+  gather("library", "count", 1:21) %>% 
+  mutate(sample_ID = case_when(
+    str_detect(library, "EC1") ~ "EC1",
+    str_detect(library, "EC2") ~ "EC2",
+    str_detect(library, "EC3") ~ "EC3",
+    str_detect(library, "Sp1") ~ "Sp1",
+    str_detect(library, "Sp2") ~ "Sp2",
+    str_detect(library, "Sp3") ~ "Sp3",
+    str_detect(library, "Ve1") ~ "Ve1",
+    str_detect(library, "Ve2") ~ "Ve2",
+    str_detect(library, "Ve3") ~ "Ve3",
+    str_detect(library, "Z2.5_rep1") ~ "Z2.5_1",
+    str_detect(library, "Z2.5_rep2") ~ "Z2.5_2",
+    str_detect(library, "Z2.5_rep3") ~ "Z2.5_3",
+    str_detect(library, "Z5_rep1") ~ "Z5_1",
+    str_detect(library, "Z5_rep2") ~ "Z5_2",
+    str_detect(library, "Z5_rep3") ~ "Z5_3",
+    str_detect(library, "Z9_rep1") ~ "Z9_1",
+    str_detect(library, "Z9_rep2") ~ "Z9_2",
+    str_detect(library, "Z9_rep3") ~ "Z9_3",
+    str_detect(library, "seedling_rep1") ~ "Seedling1",
+    str_detect(library, "seedling_rep2") ~ "Seedling2",
+    str_detect(library, "seedling_rep3") ~ "Seedling3"
+  )) %>% 
+  inner_join(mRNA_sample_des, by = "sample_ID") %>% 
+  inner_join(mRNA_info %>% 
+               select(Total, sample_ID), by = "sample_ID") %>% 
+  mutate(nor.count = count/Total/kb)
+
+tm_l %>% head(10)
+```
+```{r}
+#summarise
+gm_s <- gm_l %>% 
+  group_by(sample_type, tag, class) %>% 
+  summarise(mean.nor.count = mean(nor.count)) %>% 
+  ungroup()
+
+head(gm_s, 10)
+
+tm_s <- tm_l %>% 
+  group_by(sample_type, tag, class) %>% 
+  summarise(mean.nor.count = mean(nor.count)) %>% 
+  ungroup()
+
+head(tm_s, 10)
+```
+
+#Overview of mRNA mapping to different genomic features
+```{r}
+ axis_line <- data.frame(
+  sample_type = c(-Inf),
+  features = c("Gypsy")
+)
+```
+
+```{r}
+mRNA_info_l %>% 
+  filter(features != "Genes") %>% 
+  filter(features != "NOR") %>%
+  filter(features == "Gypsy"|
+           features == "TIR") %>% 
+  ggplot(aes(x = sample_type, y = proportion)) +
+  facet_grid(. ~ features, space = "free", scales = "free") +
+  geom_vline(data = axis_line, aes(xintercept = sample_type), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  #geom_bar(stat = "summary", fun.y = mean, aes(fill = sample_type), alpha = 0.8)+
+  geom_point(aes(color = sample_type), size = 2.5, alpha = 0.8) +
+  #geom_text(data = grouping, aes(y = upper, label = .group), size = 5, fontface = "bold") +
+  scale_color_manual(values = c("tomato1", "orange", "seagreen", "dodgerblue2", "violetred2", "violetred3", "violetred4")) +
+  labs(x = NULL,
+       color = NULL) +
+  scale_x_discrete(labels = c("egg", "pollen VC", "seedling", "sperm", "Z2.5 hrs", "Z5 hrs", "Z9 hrs")) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black", angle = 45, hjust = 1)) +
+  theme(axis.text.y = element_text(colour="black")) 
+
+ggsave(filename = "mRNA_TE_proportions.svg", width = 5, height = 6)
+ggsave(filename = "mRNA_TE_proportions.png", width = 5, height = 6)  
+```
+
+```{r}
+mRNA <- rbind(gm_s, tm_s) %>% 
+  mutate(RNA_type = "mRNA") %>% 
+  mutate(genotype = "WT") 
+```
+
+#Scatter plot mRNA vs. siRNA
+##egg siRNA vs. egg mRNA
+```{r}
+#siRNA %>% head(10)
+egg_mRNA <- mRNA %>% 
+ filter(sample_type == "egg") %>% 
+               select(-RNA_type, -genotype)
+
+egg_mRNA %>% head(10)
+```
+```{r}
+egg <- siRNA %>% 
+  filter(sample_type == "egg") %>% 
+  select(-RNA_type, -genotype) %>% 
+  full_join(egg_mRNA, by = c("tag", "class", "sample_type")) 
+
+egg %>% arrange(-mean.nor.count.x) %>% head(10)
+```
+
+
+##sperm siRNA vs. sperm mRNA
+```{r}
+sperm_mRNA <- mRNA %>% 
+ filter(sample_type == "sperm") %>% 
+               select(-RNA_type, -genotype)
+
+sperm_mRNA %>% head(10)
+```
+```{r}
+sperm <- siRNA %>% 
+  filter(sample_type == "sperm") %>% 
+  select(-RNA_type, -genotype) %>% 
+  full_join(sperm_mRNA, by = c("tag", "class", "sample_type")) 
+
+sperm %>% arrange(-mean.nor.count.x) %>% head(10)
+```
+
+##seedling siRNA vs. seedling mRNA 
+```{r}
+#siRNA %>% head(10)
+seedling_mRNA <- mRNA %>% 
+ filter(sample_type == "seedling shoot") %>% 
+               select(-RNA_type, -genotype)
+
+seedling_mRNA %>% head(10)
+```
+```{r}
+seedling <- siRNA %>% 
+  filter(sample_type == "seedling shoot") %>% 
+  #mutate(sample_type1 = "seedling") %>% 
+  #select(-sample_type) %>% 
+  #mutate(sample_type = sample_type1) %>% 
+  select(-RNA_type, -genotype) %>% 
+  full_join(seedling_mRNA, by = c("tag", "class", "sample_type")) 
+
+seedling %>% arrange(-mean.nor.count.x) %>% head(10)
+```
+ 
+
+```{r}
+#produce the y = 1/x curve
+fit_df <- rbind(egg, sperm, seedling) %>% 
+  mutate(y = log10(mean.nor.count.y  * 10^6 + 1.01)) %>% 
+  mutate(x = 1/log10(mean.nor.count.24  * 10^6 + 1.01)) %>% 
+  mutate(y_fit = x) %>% 
+  mutate(delta = y - y_fit) %>% 
+  mutate(side = case_when(
+    delta > 0 ~ "out",
+    delta < 0 ~ "in"
+  )) %>% 
+  group_by(sample_type, class, side) %>% 
+  summarise(number = n()) %>% 
+  ungroup() %>% 
+  mutate(x = case_when(
+    side == "in" ~ 1,
+    side == "out" ~2
+  )) %>% 
+  mutate(y = case_when(
+    side == "in" ~ 0.1,
+    side == "out" ~2
+  )) 
+
+fit_df
+```
+#plot
+```{r}
+curve <- data.frame(x = seq(0.29, 3, by= 0.001))
+curve <- curve %>% 
+  mutate(y = 1/x)
+
+
+rbind(egg, sperm, seedling) %>% 
+  ggplot(aes(x = log10(mean.nor.count.24 * 10^6 + 1) , y = log10(mean.nor.count.y * 10^6 + 1))) + 
+  facet_grid(class ~ sample_type, scales = "free") +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_point(alpha = 0.8, aes(color = sample_type)) +
+  # stat_bin_2d(bins  = 5, aes(fill = ..density..), alpha = 0.8) +
+  labs(x = "log10 siRNA counts per million per kb",
+       y = "log10 mRNA counts per million per kb") +
+  geom_line(data = curve, aes(x = x, y = y), linetype = 6, size = 1.25) +
+  geom_text(data = fit_df, aes(x = x, y = y, label = number), size = 5, fontface = "bold") +
+  scale_color_manual(values = c("tomato1", "seagreen", "dodgerblue2"))+
+  theme_minimal() +
+  theme(legend.position = "none") + 
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black"))
+
+ggsave(filename = "egg_sd_sperm_siRNA_vs_mRNA_log.png", width = 6, height = 6)
+# ggsave(filename = "egg_sd_sperm_siRNA_vs_mRNA_log.svg", width = 5, height = 6)
+```
+
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

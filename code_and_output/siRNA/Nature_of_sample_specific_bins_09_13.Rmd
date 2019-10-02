@@ -1,0 +1,328 @@
+---
+title: "TE_overlap_specific_loci and distance to closest gene"
+author: "Chenxin Li"
+date: "Sep 13, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(stringr)
+library(svglite)
+```
+
+# % of loci overlapping TEs
+```{r}
+egg <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_siRNA_loci_transposon_counts/egg-specific_24siRNAs.cov.o1548453", 
+    col_names = FALSE)
+
+sperm <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_siRNA_loci_transposon_counts/sperm-specific_24siRNAs.cov.o1548456", 
+    col_names = FALSE)
+
+seedling <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_siRNA_loci_transposon_counts/seedling-specific_24siRNAs.cov.o1548454", 
+    col_names = FALSE)
+
+intersect <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_siRNA_loci_transposon_counts/sperm-seedling-egg_24siRNAs_intersection.cov.o1548460", 
+    col_names = FALSE)
+
+ctrl <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_siRNA_loci_transposon_counts/seedling_24.siRNAs.bam.100bp.cov.o1548467", 
+    col_names = FALSE)
+```
+```{r}
+TE_bins <- ctrl %>% 
+  mutate(bins = "ctrl") %>% 
+  rbind(egg %>% 
+          mutate(bins = "egg-specific")) %>% 
+  rbind(seedling %>%  
+          mutate(bins = "seedling-specific")) %>% 
+  rbind(sperm %>% 
+          mutate(bins = "sperm-specific")) %>%  
+  rbind(intersect %>%
+          mutate(bins = "intersect")) %>% 
+  mutate(type = case_when(
+    str_detect(X2, "TIR") ~ "TIR",
+    str_detect(X2, "CentO") ~ "CentO",
+    str_detect(X2, "Gypsy") ~ "Gypsy",
+    str_detect(X2, "Copia") ~ "Copia",
+    str_detect(X2, "LINE") ~ "LINE",
+    str_detect(X2, "gff") == F ~ "total"
+  ))
+
+colnames(TE_bins) <- c("counts", "tag", "bins", "type")
+head(TE_bins)
+```
+```{r}
+total <- TE_bins %>% 
+  filter(type == "total") 
+colnames(total)[1] <- "total"
+total
+```
+```{r}
+TEs <- TE_bins %>% 
+  filter(type != "total") %>% 
+  inner_join(total %>% 
+               select(-type), by = c( "bins")) %>% 
+  mutate(proportion = counts/total)
+
+TEs
+```
+```{r}
+TEs_wide <- TEs %>%
+  filter(type == "TIR" |
+           type == "Gypsy") %>% 
+  select(-proportion, -tag.x, -tag.y) %>% 
+  spread(type, counts)
+
+TEs_wide
+```
+## proportion tests
+```{r}
+pairwise.prop.test(x = TEs_wide[3:4] %>% as.matrix(),
+                   n = TEs_wide[, 2] %>% as.matrix(),
+                   p.adjust.method = "bonf")$p.value
+```
+
+## plot
+```{r}
+axis_line <- data.frame(
+  type = c(-Inf),
+  bins.f = c("egg-\nspecific")
+)
+
+axis_line
+```
+
+```{r}
+TEs %>%
+  filter(type == "TIR" |
+           type == "Gypsy") %>% 
+  mutate(bins = case_when(
+    str_detect(bins, "seedling") ~ "seedling-\nspecific",
+    str_detect(bins, "egg") ~ "egg-\nspecific",
+    str_detect(bins, "sperm") ~ "sperm-\nspecific",
+    str_detect(bins, "inter") ~ "intersect.",
+    str_detect(bins, "ctrl") ~ "genome"
+  )) %>% 
+  mutate(bins.f = factor(bins, levels = c(
+    "egg-\nspecific", "seedling-\nspecific", "sperm-\nspecific", "intersect.", "genome"
+  ))) %>% 
+  ggplot(aes(x = type, y = proportion)) +
+  facet_grid(. ~ bins.f, switch = "x") + 
+  geom_vline(data = axis_line, aes(xintercept = type), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_bar(stat = "identity", aes(fill = type), alpha = 0.8) +
+  scale_fill_manual(values = c("grey50", "orange2")) + 
+  scale_x_discrete(labels = NULL) +
+  labs(x = "24nt siRNA loci",
+       fill = NULL) + 
+  theme_minimal() +
+  theme(strip.placement = "outside", legend.position = c(0.85, 0.9)) +
+  theme(text = element_text(size = 16.5, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave("TE_overlap_with_24nt_siRNA_loci.png", height = 5, width = 5)
+ggsave("TE_overlap_with_24nt_siRNA_loci.svg", height = 5, width = 5)
+```
+
+```{r}
+TE_bins
+```
+
+# distance to closest gene
+```{r}
+egg_specific_distance <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/closest_gene_distances/egg-specific_closest_gene.txt", header=FALSE) 
+```
+```{r}
+sd_specific_distance <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/closest_gene_distances/seedling-specific_closest_gene.txt", header=FALSE)
+```
+```{r}
+sp_specific_distance <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/closest_gene_distances/sperm-specific_closest_gene.txt", header=FALSE)
+```
+```{r}
+intersect_distance <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/closest_gene_distances/intersection_closest_gene.txt", header=FALSE) 
+```
+```{r}
+ctrl_distance <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/closest_gene_distances/all_closest_gene.txt", header=FALSE)
+```
+
+
+```{r}
+egg_specific_df <- egg_specific_distance %>% 
+  select(V22) %>% 
+  mutate(bin = "egg-\nspecific") 
+
+```
+```{r}
+sd_specific_df <- sd_specific_distance %>% 
+  select(V22) %>% 
+  mutate(bin = "seedling-\nspecific") 
+```
+```{r}
+sp_specific_df <- sp_specific_distance %>% 
+  select(V22) %>% 
+  mutate(bin = "sperm-\nspecific") 
+```
+```{r}
+intersect_df <- intersect_distance %>% 
+  select(V22) %>% 
+  mutate(bin = "intersect.") 
+```
+```{r}
+ctrl_df <- ctrl_distance %>% 
+  select(V22) %>% 
+  mutate(bin = "genome") 
+```
+
+```{r}
+distance_to_gene <- rbind(egg_specific_df,
+                          sd_specific_df,
+                          sp_specific_df,
+                          intersect_df,
+                          ctrl_df) %>% 
+  mutate(bin = factor(bin, levels = c(
+    "egg-\nspecific", "seedling-\nspecific", "sperm-\nspecific", "intersect.", "genome"
+  )))
+
+colnames(distance_to_gene)[1] <- "distance"
+head(distance_to_gene)
+```
+
+
+
+##statistics on median distance by bootstrapping
+```{r}
+distance_s <- distance_to_gene %>%
+  group_by(bin) %>% 
+  summarise(mean = mean(distance), 
+            median = median(distance),
+            Q1 = quantile(distance, 0.25),
+            Q3 = quantile(distance, 0.75),
+            IQR = IQR(distance),
+            upper = quantile(distance, 0.975),
+            lower = quantile(distance, 0.025), 
+            N = n(), 
+            SE = sd(distance)/sqrt(n())) %>% 
+  ungroup() %>% 
+  mutate(cutoff = Q3 + 2*IQR)
+
+
+distance_s 
+```
+
+#96% CI of median by bootstrapping 
+```{r}
+library(boot)
+f.med <- function(Y,i) median(Y[i])
+```
+```{r}
+#alpha is adjusted for multiple comparions here! (Bonferroni)
+alpha <- 0.05/(choose(4, 2))
+alpha
+```
+
+```{r}
+egg_distance <- distance_to_gene %>% 
+  filter(str_detect(bin, "egg"))
+
+egg_median <- boot(egg_distance$distance, R = 1000, statistic = f.med)
+egg_quantiles <- quantile(egg_median$t, c(alpha/2, 0.5, 1-alpha/2))
+```
+```{r}
+seedling_distance <- distance_to_gene %>% 
+  filter(str_detect(bin, "seedling"))
+
+seedling_median <- boot(seedling_distance$distance, R = 1000, statistic = f.med)
+seedling_quantiles <- quantile(seedling_median$t, c(alpha/2, 0.5, 1-alpha/2))
+```
+```{r}
+sperm_distance <- distance_to_gene %>% 
+  filter(str_detect(bin, "sperm"))
+
+sperm_median <- boot(sperm_distance$distance, R = 1000, statistic = f.med)
+sperm_quantiles <- quantile(sperm_median$t, c(alpha/2, 0.5, 1-alpha/2))
+```
+```{r}
+intersect_distance <- distance_to_gene %>% 
+  filter(str_detect(bin, "intersect"))
+
+intersect_median <- boot(intersect_distance$distance, R = 1000, statistic = f.med)
+intersect_quantiles <- quantile(intersect_median$t, c(alpha/2, 0.5, 1-alpha/2))
+```
+```{r}
+distance_median <- rbind(egg_quantiles, seedling_quantiles, sperm_quantiles, intersect_quantiles)
+
+distance_median
+```
+
+##plot linear scale
+```{r}
+distance_s %>% 
+  ggplot(aes(x = bin, y = median/1000)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_crossbar(aes(ymin = Q1/1000, ymax = Q3/1000, fill = bin), alpha = 0.8, width = 0.8) + 
+  geom_segment(aes(x = bin, xend = bin, y = Q3/1000, yend = cutoff/1000)) +
+  geom_segment(aes(x = bin, xend = bin, y = Q1/1000, yend = lower/1000)) +
+  scale_fill_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60", "grey10")) +
+  scale_color_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60", "grey10")) +
+  labs(x = "24nt siRNA loci", 
+       y = "kilobases to nearest gene") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
+  theme(axis.text.y=element_text(colour = "black"))
+
+ggsave("distance_to_nearest_gene_linear.png", height = 4.5, width = 5)
+ggsave("distance_to_nearest_gene_linear.svg", height = 5, width = 5)
+```
+
+##summary statistics
+```{r}
+boxplot_summary <- distance_to_gene %>% 
+  group_by(bin) %>% 
+  summarise(median = median(distance), 
+            upper = quantile(distance, 0.75), 
+            lower = quantile(distance, 0.25), 
+            IQR = IQR(distance),
+            N = n()) %>% 
+  ungroup() %>% 
+  mutate(upper.whisker = upper + 2*IQR) 
+
+boxplot_summary
+```
+
+```{r}
+distance_to_gene %>% 
+  inner_join(boxplot_summary, by = "bin") %>% 
+  filter(distance > upper.whisker) %>% 
+  group_by(bin) %>% 
+  count() %>% 
+  inner_join(boxplot_summary, by = "bin") %>% 
+  mutate(drop_rate = n / N)
+```
+
+
+
+
+
+ 
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
