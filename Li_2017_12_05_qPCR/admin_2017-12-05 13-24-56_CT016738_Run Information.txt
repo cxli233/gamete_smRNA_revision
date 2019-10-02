@@ -1,0 +1,13 @@
+File Name	admin_2017-12-05 13-24-56_CT016738.pcrd
+Created By User	admin
+Notes	
+ID	
+Run Started	12/05/2017 21:25:14 UTC
+Run Ended	12/05/2017 22:49:26 UTC
+Sample Vol	20
+Lid Temp	105
+Protocol File Name	CLqPCR.prcl
+Plate Setup File Name	Quick Plate_96 wells_SYBR Only.pltd
+Base Serial Number	CT016738
+Optical Head Serial Number	785BR12313
+CFX Manager Version	3.1.1517.0823. 

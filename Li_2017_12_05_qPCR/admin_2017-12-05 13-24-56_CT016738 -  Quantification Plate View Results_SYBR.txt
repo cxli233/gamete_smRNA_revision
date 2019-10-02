@@ -1,0 +1,33 @@
+		1	2	3	4	5	6	7	8	9	10	11	12
+A	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+A	Sample												
+A	Cq	NaN	NaN	NaN	NaN	NaN	8.51297933051071	8.02246196516045	8.19560675302222	NaN	NaN	NaN	NaN
+A		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+B	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+B	Sample												
+B	Cq	NaN	NaN	4.00762240575633	4.08859126739835	NaN	6.31740953090853	6.38204072393923	6.76073457187794	NaN	NaN	NaN	NaN
+B		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+C	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+C	Sample												
+C	Cq	NaN	NaN	8.59717401702514	8.52883350135584	NaN	7.14587128240388	7.07287124190562	7.08560577676103	NaN	NaN	NaN	NaN
+C		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+D	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+D	Sample												
+D	Cq	NaN	NaN	12.5038897563458	12.2290399629924	NaN	6.4400515162787	6.43548325525337	6.52827153776854	NaN	NaN	NaN	NaN
+D		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+E	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+E	Sample												
+E	Cq	NaN	NaN	15.9715694908775	15.6268940401065	NaN	7.23116631845499	6.97945490680228	7.22934426491297	NaN	NaN	NaN	NaN
+E		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+F	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+F	Sample												
+F	Cq	NaN	NaN	19.564879265457	19.2870297778988	NaN	7.52606546256719	7.31016223066205	7.14535812504891	NaN	NaN	NaN	NaN
+F		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+G	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+G	Sample												
+G	Cq	NaN	NaN	22.6004117326165	22.6336443032271	NaN	10.9379964027127	11.1048950160652	11.1308607761465	NaN	NaN	NaN	NaN
+G		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN
+H	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+H	Sample												
+H	Cq	NaN	NaN	26.5644325651128	26.3965786005217	NaN	12.8821297078654	13.350667593185	13.6851372526925	NaN	NaN	NaN	NaN
+H		NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN	NaN

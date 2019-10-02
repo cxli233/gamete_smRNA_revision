@@ -1,0 +1,33 @@
+		1	2	3	4	5	6	7	8	9	10	11	12
+A	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+A	Sample												
+A	Peak 1	None	None	81	81	None	77.5	77.5	77.5	None	None	None	None
+A	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+B	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+B	Sample												
+B	Peak 1	None	None	81	81	None	78	78	78	None	None	None	None
+B	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+C	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+C	Sample												
+C	Peak 1	None	None	81	81	None	78	78	78	None	None	None	None
+C	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+D	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+D	Sample												
+D	Peak 1	None	None	81	81	None	78	78	78	None	None	None	None
+D	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+E	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+E	Sample												
+E	Peak 1	None	None	81	81	None	78	78	78	None	None	None	None
+E	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+F	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+F	Sample												
+F	Peak 1	None	None	81	81	None	77.5	77.5	77.5	None	None	None	None
+F	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+G	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+G	Sample												
+G	Peak 1	None	None	81	81	None	78.5	78.5	78.5	None	None	None	None
+G	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
+H	Content	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn	Unkn
+H	Sample												
+H	Peak 1	None	None	81	81	None	78.5	78.5	78.5	None	None	None	None
+H	Peak 2	None	None	None	None	None	None	None	None	None	None	None	None
