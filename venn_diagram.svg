@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="130.31119mm"
+   height="90.49894mm"
+   viewBox="0 0 461.73256 320.66553"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="venn_diagram.svg">
+  <defs
+     id="defs4">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath7919">
+      <rect
+         style="opacity:0.80800003;fill:#000000;fill-opacity:0;stroke:#323232;stroke-width:2.4000001;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:0.97206708"
+         id="rect7921"
+         width="460.66956"
+         height="319.2482"
+         x="-422.66611"
+         y="-569.70142"
+         clip-path="none"
+         transform="matrix(-0.77814822,0.62808069,-0.62808069,-0.77814822,0,0)" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.71417785"
+     inkscape:cx="323.23243"
+     inkscape:cy="-58.543547"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     showgrid="false"
+     fit-margin-top="0.2"
+     fit-margin-left="1.3877788e-016"
+     fit-margin-right="0.3"
+     fit-margin-bottom="0.2"
+     inkscape:window-width="1600"
+     inkscape:window-height="847"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-140.63058,-83.734889)">
+    <g
+       id="g7898"
+       transform="matrix(-0.77814822,-0.62808069,0.62808069,-0.77814822,563.29669,654.14497)"
+       clip-path="url(#clipPath7919)">
+      <rect
+         id="rect7860"
+         style="fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:2;stroke-opacity:1"
+         height="397"
+         width="805"
+         y="2"
+         x="2" />
+      <text
+         id="text7862"
+         y="5"
+         x="404"
+         class="vennchart-title"
+         style="font-size:18px;font-family:Arial, sans-serif;fill:#000000" />
+      <text
+         id="text7864"
+         y="10"
+         x="404"
+         class="vennchart-subtitle"
+         style="font-size:18px;font-family:Arial, sans-serif;fill:#000000" />
+      <g
+         id="g7866"
+         class="venn-area venn-circle venn-sets-0">
+        <path
+           id="path7868"
+           d="m 312.31499,278.58896 m -97.41104,0 a 97.41104,97.41104 0 1 0 194.82208,0 97.41104,97.41104 0 1 0 -194.82208,0"
+           style="fill:#1f77b4;fill-opacity:0.25;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g7870"
+         class="venn-area venn-circle venn-sets-1">
+        <path
+           id="path7872"
+           d="m 319.42571,169.58364 m -71.07549,0 a 71.075497,71.075497 0 1 0 142.15099,0 71.075497,71.075497 0 1 0 -142.15099,0"
+           style="fill:#ff7f0e;fill-opacity:0.25;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g7874"
+         class="venn-area venn-circle venn-sets-2">
+        <path
+           id="path7876"
+           d="m 459.51297,169.58307 m -133.58307,0 a 133.58307,133.58307 0 1 0 267.16615,0 133.58307,133.58307 0 1 0 -267.16615,0"
+           style="fill:#2ca02c;fill-opacity:0.25;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g7878"
+         class="venn-area venn-intersection venn-sets-1_2">
+        <path
+           id="path7880"
+           d="m 343.80928,102.82161 a 71.075497,71.075497 0 0 1 5.3e-4,133.52386 133.58307,133.58307 0 0 1 -5.3e-4,-133.52386"
+           style="fill-opacity:0;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g7882"
+         class="venn-area venn-intersection venn-sets-0_1">
+        <path
+           id="path7884"
+           d="m 255.07778,199.76757 a 97.41104,97.41104 0 0 1 124.22927,8.10382 71.075497,71.075497 0 0 1 -124.22927,-8.10382"
+           style="fill-opacity:0;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g7886"
+         class="venn-area venn-intersection venn-sets-0_2">
+        <path
+           id="path7888"
+           d="m 326.52902,182.22054 a 97.41104,97.41104 0 0 1 82.1102,110.87892 133.58307,133.58307 0 0 1 -82.1102,-110.87892"
+           style="fill-opacity:0;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+      <g
+         id="g7890"
+         class="venn-area venn-intersection venn-sets-0_1_2">
+        <path
+           id="path7892"
+           d="m 326.52902,182.22054 a 97.41104,97.41104 0 0 1 52.77803,25.65085 71.075497,71.075497 0 0 1 -35.49724,28.47408 133.58307,133.58307 0 0 1 -17.28079,-54.12493"
+           style="fill-opacity:0;stroke:#ff0000;stroke-width:0;stroke-opacity:0"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2"
+     transform="translate(-140.63058,-83.734889)">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="311.47162"
+       y="209.8201"
+       id="text4205"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4207"
+         x="311.47162"
+         y="209.8201"
+         style="font-size:25px;text-align:center;text-anchor:middle">seedling</tspan><tspan
+         sodipodi:role="line"
+         x="311.47162"
+         y="241.0701"
+         id="tspan4209"
+         style="font-size:25px;text-align:center;text-anchor:middle"> (192,428)</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text4280"
+       y="220.42258"
+       x="517.81494"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-size:25px;text-align:center;text-anchor:middle"
+         id="tspan4284"
+         y="220.42258"
+         x="517.81494"
+         sodipodi:role="line">sperm</tspan><tspan
+         style="font-size:25px;text-align:center;text-anchor:middle"
+         y="251.67258"
+         x="517.81494"
+         sodipodi:role="line"
+         id="tspan4173">(102,325)</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text4361"
+       y="346.31342"
+       x="426.30792"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif Bold';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-size:25px;text-align:center;text-anchor:middle"
+         id="tspan4365"
+         y="346.31342"
+         x="426.30792"
+         sodipodi:role="line">egg</tspan><tspan
+         style="font-size:25px;text-align:center;text-anchor:middle"
+         y="377.56342"
+         x="426.30792"
+         sodipodi:role="line"
+         id="tspan4177"> (54,476)</tspan></text>
+  </g>
+</svg>
