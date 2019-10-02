@@ -1,0 +1,1338 @@
+---
+title: "miR"
+author: "Chenxin Li"
+date: "Sep 03, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(vegan)
+library(edgeR)
+library(dynamicTreeCut)
+library(RColorBrewer)
+library(stringr)
+library(forcats)
+library(svglite)
+library(ggdendro)
+```
+#load data
+```{r}
+sample_des <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/sample_des_revision.xlsx") 
+
+sample_des
+
+smRNA_comp <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/code and output/smRNA_comp.csv")  
+
+sample_des_lib <- sample_des %>% 
+  select(-library)%>% 
+  inner_join(smRNA_comp, by = "sample_ID") %>% 
+  arrange(sample_ID)
+
+sample_des_lib 
+```
+
+```{r}
+#sperm
+BS1 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/blender-sperm-1_S30_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+BS2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/BlenderSperm2_S8_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+BS4a <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/BlenderSperm4a_S173_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+BS4b <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Blendersperm4b_S176_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+BS6a <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Blendersperm6a_S174_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+BS6b <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Blendersperm6b_S177_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+SP5b <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/sperm-5b_S28_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+SP5c <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/sperm-5c_S29_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#seedling shoot
+B15 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Bulk-15_S26_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+B20 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Bulk-20_S27_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+B25 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Bulk-25_S28_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+SD4 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/seedling4_S3_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#leaf 
+ddm1 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/ddm1ab.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+ddm1_con <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/ddm1ab_control.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+drm2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/drm2-T-DNA.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+drm2_con <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/drm2-T-DNA_control.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#egg
+E9a <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/egg-9a_S25_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+E9b <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/egg-9b_S26_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+E9c <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/egg-9c_S27_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+E2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/eggcell2_combined.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+E3 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/eggcell3_combined.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+E4 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/eggcell4_combined.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#spikelet
+S3_1 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048325_9522_S3_1_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S3_2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048326_9522_S3_2_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S3_3 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048327_9522_S3_3_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S5_1 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048328_9522_S5_1_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S5_2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048329_9522_S5_2_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S5_3 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048330_9522_S5_3_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S7_1 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048331_9522_S7_1_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S7_2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048332_9522_S7_2_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+S7_3 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/GSM2048333_9522_S7_3_filtered.fasta.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#ovary at house
+OV1a <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/ovary-no-egg-1a_S31_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+OV1b <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/ovary-no-egg-1b_S32_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+OV2 <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/Ovarynoegg2_S5_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+em_dry <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR2544786.2.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#anther
+an_pre <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049778.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+an_mei <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049779.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+an_mic <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049780.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+an_bi <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049781.1.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+#ovary published
+ov_1st <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049786.1.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+ov_2nd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049787.1.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+ov_3rd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049788.1.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+
+ov_4th <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5049789.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+```{r}
+root <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/miR coverage/SRR5713891.fastq.gz.trimmed.fastq.gz.sorted.bam.miR.cov", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE)
+```
+
+#data arrangement
+```{r}
+cts <- an_bi[, 9:10] %>% 
+  full_join(an_mei[, 9:10], by = "X9") %>% 
+  full_join(an_mic[, 9:10], by = "X9") %>% 
+  full_join(an_pre[, 9:10], by = "X9") %>% 
+  full_join(B15[, 9:10], by = "X9") %>% 
+  full_join(B20[, 9:10], by = "X9") %>% 
+  full_join(B25[, 9:10], by = "X9") %>% 
+  full_join(BS1[, 9:10], by = "X9") %>% 
+  full_join(BS2[, 9:10], by = "X9") %>% 
+  full_join(BS4a[, 9:10], by = "X9") %>% 
+  full_join(BS4b[, 9:10], by = "X9") %>% 
+  full_join(BS6a[, 9:10], by = "X9") %>% 
+  full_join(BS6b[, 9:10], by = "X9") %>% 
+  full_join(ddm1[, 9:10], by = "X9") %>% 
+  full_join(ddm1_con[, 9:10], by = "X9") %>% 
+  full_join(drm2[, 9:10], by = "X9") %>% 
+  full_join(drm2_con[, 9:10], by = "X9") %>% 
+  full_join(E2[, 9:10], by = "X9") %>% 
+  full_join(E3[, 9:10], by = "X9") %>% 
+  full_join(E4[, 9:10], by = "X9") %>% 
+  full_join(E9a[, 9:10], by = "X9") %>% 
+  full_join(E9b[, 9:10], by = "X9") %>% 
+  full_join(E9c[, 9:10], by = "X9") %>% 
+  full_join(em_dry[, 9:10], by = "X9") %>%
+  full_join(ov_1st[, 9:10], by = "X9") %>% 
+  full_join(ov_2nd[, 9:10], by = "X9") %>% 
+  full_join(ov_3rd[, 9:10], by = "X9") %>% 
+  full_join(ov_4th[, 9:10], by = "X9") %>% 
+  full_join(OV1a[, 9:10], by = "X9") %>% 
+  full_join(OV1b[, 9:10], by = "X9") %>% 
+  full_join(OV2[, 9:10], by = "X9") %>% 
+  full_join(root[, 9:10], by = "X9") %>% 
+  full_join(S3_1[, 9:10], by = "X9") %>% 
+  full_join(S3_2[, 9:10], by = "X9") %>% 
+  full_join(S3_3[, 9:10], by = "X9") %>% 
+  full_join(S5_1[, 9:10], by = "X9") %>% 
+  full_join(S5_2[, 9:10], by = "X9") %>% 
+  full_join(S5_3[, 9:10], by = "X9") %>% 
+  full_join(S7_1[, 9:10], by = "X9") %>% 
+  full_join(S7_2[, 9:10], by = "X9") %>% 
+  full_join(S7_3[, 9:10], by = "X9") %>% 
+  full_join(SD4[, 9:10], by = "X9") %>% 
+  full_join(SP5b[, 9:10], by = "X9") %>% 
+  full_join(SP5c[, 9:10], by = "X9") %>% 
+  separate(X9, c("A", "B", "C", "D"), sep = ";", remove = T) %>% 
+  select(-A, -B, -D) %>% 
+  separate(C, c("C1", "miR"), remove = T, sep = "=") %>% 
+  select(-C1)
+  
+colnames(cts)[2:45] <- c("an_bi", "an_mei", "an_mic", "an_pre",
+                         "B15", "B20", "B25", 
+                         "BS1", "BS2", "BS4a", "BS4b", "BS6a", "BS6b",
+                         "ddm1", "ddm1_con", "drm2", "drm2_con",
+                         "E2", "E3", "E4", "E9a", "E9b", "E9c",
+                         "em_dry", "ov_1st", "ov_2nd", "ov_3rd", "ov_4th",
+                         "OV1a", "OV1b", "OV2", "root", 
+                         "S3_1", "S3_2", "S3_3", "S5_1", "S5_2", "S5_3", "S7_1", "S7_2", "S7_3",
+                         "SD4", "SP5b", "SP5c")
+
+head(cts) 
+write_excel_csv(cts, "miR_cts.csv")
+```
+
+#miR of same sequence? 
+```{r}
+osa_mirBase22 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/miRNA/osa_mirBase22.txt", header=FALSE) 
+
+osa_mir <- osa_mirBase22[, 1:2]
+colnames(osa_mir) <- c("tag", "sequence") 
+osa_mir <- osa_mir%>% 
+  separate(tag, c("T1", "T2", "T3", "T4", "T5"), sep = " ", remove = T) %>% 
+  mutate(miR = paste("osa", T5, sep = "-")) %>% 
+  select(-T1, -T3, -T4, -T5) %>% 
+  arrange(T2)
+
+osa_mir <- osa_mir[osa_mir$miR %in% cts$miR, ]
+head(osa_mir, 10)
+```
+```{r}
+osa_mir_unique <- distinct(osa_mir, sequence, .keep_all = T)
+osa_mir_dup <- anti_join(osa_mir, osa_mir_unique, by = c("miR", "sequence"))
+dim(osa_mir_unique)
+
+head(osa_mir_unique, 10)
+
+write.csv(osa_mir, "osa_mir_seq.csv")
+write.csv(osa_mir_dup, "osa_mir_seq_duplicated.csv")
+```
+
+```{r}
+cts_seq <- cts %>% 
+  full_join(osa_mir, by = "miR") %>% 
+  #mutate(n.ch = nchar(miR)) %>% 
+  #mutate(fam = substr(miR, 1, (n.ch - 1))) %>% 
+  gather("sample_ID", "counts", 2:32) %>% 
+  group_by(sequence, sample_ID) %>%
+  summarise(sum.count = sum(counts)) %>% 
+  spread(sample_ID, sum.count) %>% 
+  full_join(osa_mir_unique, by = "sequence") %>% 
+  arrange(T2) %>% 
+  select(-T2)
+
+cts_seq <- cts_seq[complete.cases(cts_seq), ]
+cts_seq %>% head(10)  
+
+
+dim(cts_seq)[1] == dim(osa_mir_unique)[1]
+
+#cts_seq %>% filter(str_detect(miR, "159"))
+```
+
+#EdgeR
+```{r}
+sample_des_lib_pca <- sample_des_lib %>% 
+  filter(sample_type == "sperm"|
+           sample_type == "egg"|
+           sample_type == "seedling shoot"|
+           sample_type == "ovary"|
+           sample_type == "leaf"|
+           sample_type == "root")
+
+sample_des_lib_pca
+```
+
+```{r}
+cts_matrix <- cts[, 2:45] %>% 
+  select(B15, B20, B25, BS1, BS2, BS4a, BS4b, BS6a, BS6b,
+        ddm1, ddm1_con, drm2, drm2_con, 
+         E2, E3, E4, E9a, E9b, E9c,
+         OV1a, OV1b, OV2 ,root,
+         SD4, SP5b, SP5c) %>%
+  as.data.frame()
+row.names(cts_matrix) <- cts$miR
+
+y <- DGEList(counts=cts_matrix ,group=sample_des_lib_pca$sample_type, lib.size = sample_des_lib_pca$`total read`)    
+y$samples
+
+keep <- rowSums(cpm(y)> 1) >= 3 
+y <- y[keep, , keep.lib.sizes = T]
+y <- calcNormFactors(y, method = "TMM")
+#calcNormFactors calculates normalization factors using TMM
+y$samples
+
+design <- model.matrix(~0 + sample_des_lib_pca$sample_type)
+y <- estimateDisp(y, design)
+plotBCV(y)
+```
+#PCA plots
+```{r}
+cpm <- cpm(y, log =F) %>% as.data.frame()
+logcpm <- cpm(y, log =T) %>% as.data.frame()     
+write.csv(cpm, "gene_siRNA_CPM.csv")
+#adonis((t(log(cpm+1))) ~ sample_type * genotype, sample_des, method= "e")
+adonis((t(logcpm)) ~ sample_type * genotype, sample_des_lib_pca, method= "e")
+```
+
+```{r}
+pc <- prcomp(t(logcpm))
+pc_importance <- as.data.frame(t(summary(pc)$importance))
+pc_importance
+
+ggplot(pc_importance, aes(x = 1:length( `Proportion of Variance`), y = `Proportion of Variance`) ) +
+  geom_bar(stat = 'identity') +
+  xlab('dimension') +
+  theme_classic()
+
+ggplot(pc_importance, aes(x = 1:length(`Cumulative Proportion`), y = `Cumulative Proportion`) ) +
+  geom_point() +
+  xlab('dimension') +
+  ylab('cumulative variance') +
+  ylim(c(0, 1.1))+
+  theme_classic()
+
+pc_nice <- cbind(sample_des_lib_pca, pc$x)
+pc_nice <- pc_nice %>% 
+  mutate(type = case_when(
+    sample_type == "seedling shoot" |
+      sample_type == "root" |
+      sample_type == "leaf" ~ "vegetative",
+    sample_type == "egg" |
+      str_detect(sample_type, "ovary") ~ "female",
+    sample_type == "sperm" |
+      str_detect(sample_type, "spikelet") |
+      str_detect(sample_type, "anther") ~ "male",
+    str_detect(sample_type, "em") ~ "embryo"
+  )) %>% 
+  mutate(type = factor(type, levels = c("female", "vegetative", "male", "embryo")))
+```
+
+```{r}
+pc_nice %>% 
+  filter(sample_type == "seedling shoot"|
+           sample_type == "egg"|
+           sample_type == "sperm"|
+           sample_type == "ovary") %>% 
+  mutate(sample_type1 = case_when(
+    sample_type == "seedling shoot" ~ "seedling\nshoot",
+    sample_type != "seedling shoot" ~ sample_type
+  )) %>% 
+  ggplot(aes(PC1, PC2)) +
+  stat_ellipse(aes(fill = type), alpha = 0.3, level = 0.9, type = "t", geom = "polygon") +
+  geom_point(aes(color = sample_type1), size = 3, alpha = 0.8) +
+  labs(x = paste("PC1 (", pc_importance[1, 2] %>% signif(3)*100, "% of Variance)", sep = ""), 
+       y = paste("PC2 (", pc_importance[2, 2] %>% signif(3)*100, "% of Variance)", "  ", sep = ""),
+       fill = NULL,
+       color = NULL) +
+  scale_color_manual(values = c("orangered3", "tomato1", "seagreen", "dodgerblue2"),
+                   limits = c("ovary", "egg", "seedling\nshoot", "sperm")) +
+  theme_bw()+
+# theme(legend.position = "bottom", legend.box = "vertical",legend.spacing.y = unit(0.2, "lines"))+
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave(filename = "miR_PCA.svg", width = 6, height = 5)
+ggsave(filename = "miR_PCA.png", width = 6, height = 5)
+```
+
+
+#miRNA clusters
+egg vs. seedling vs. sperm
+```{r}
+logcpm_long <- logcpm %>% 
+  mutate(miR = row.names(logcpm)) %>% 
+  gather("sample_ID", "logCPM", 1:26) %>%  #collect logCPM
+  mutate(sample_type = case_when(          #identify samples
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" |
+      sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "egg",
+    sample_ID == "SP5b" |
+      sample_ID == "SP5c" |
+      sample_ID == "BS1" |
+      sample_ID == "BS2" |
+      sample_ID == "BS4a" |
+      sample_ID == "BS4b" |
+      sample_ID == "BS6a" |
+      sample_ID == "BS6b"  ~ "sperm", 
+    sample_ID == "B15" |
+      sample_ID == "B20" |
+      sample_ID == "B25" |
+      sample_ID == "SD4" ~ "seedling shoot", 
+    sample_ID == "OV1a" |
+      sample_ID == "OV1b" |
+      sample_ID == "OV2" ~ "ovary",
+    sample_ID == "root" ~ "root",
+    sample_ID == "ddm1" |
+      sample_ID == "ddm1_con" |
+      sample_ID == "drm2" |
+      sample_ID == "drm2_con" ~ "leaf"
+  )) %>% 
+  filter(sample_type == "egg"|
+           sample_type == "seedling shoot" |
+           sample_type == "sperm") %>%   
+  group_by(sample_type, miR) %>% 
+  summarise(logCPM = mean(logCPM)) %>%   #average reps up to sample type
+  ungroup() %>% 
+  group_by(miR) %>% 
+  mutate(z = (logCPM - mean(logCPM))/sd(logCPM)) %>% #z score transformation
+  as.data.frame()
+  
+logcpm_long %>% head(10)
+```
+```{r}
+z <- logcpm_long[, c(1, 2, 4)] %>% 
+  spread(sample_type, z) %>% 
+  as.data.frame()
+
+row.names(z) <- z$miR
+z
+```
+```{r}
+all.dist <- dist(z[2:4], method = "e") 
+all.hc <- hclust(all.dist, method = "complete")
+plot(all.hc)
+```
+```{r}
+all.clust.obj <- cutreeHybrid(dendro = all.hc, distM = as.matrix(all.dist), minClusterSize = 5)
+
+temp2 <- all.clust.obj$labels %>% 
+  as.data.frame()
+
+colnames(temp2) <- "cluster_name"
+
+temp3 <- cbind(colnames(as.matrix(all.dist)), temp2) %>% 
+  as.data.frame()
+
+colnames(temp3)[1] <- "miR"
+temp3
+
+unique(temp3$cluster_name) %>% length()
+```
+```{r}
+logcpm_clust <- temp3 %>% 
+  inner_join(logcpm_long, by = "miR")
+```
+```{r}
+write_excel_csv(temp3, "cluster_assignment_new.csv")
+
+temp3 %>% 
+  group_by(cluster_name) %>% 
+  count() %>% 
+  ggplot(aes(x = cluster_name, y = n)) +
+  geom_point() +
+  labs(x = "cluster",
+       y = "number of miR") +
+  theme_classic() 
+```
+```{r}
+#order cluster
+hcd <- as.dendrogram(all.hc)
+dend_data <- dendro_data(hcd, type = "rectangle")
+head(dend_data$labels)
+```
+
+```{r}
+logcpm_clust2 <- logcpm_clust %>% 
+   inner_join(dend_data$labels, by = c("miR" = "label"))
+
+cluster_order <- logcpm_clust2 %>% 
+  distinct(miR, .keep_all = T) %>% 
+  group_by(cluster_name) %>% 
+  summarise(order = mean(x)) %>% 
+  ungroup()
+
+logcpm_clust3 <- logcpm_clust2 %>% 
+  inner_join(cluster_order, by = "cluster_name") %>% 
+  mutate(cluster_name = as.factor(cluster_name)) %>% 
+  mutate(cluster_name = reorder(cluster_name, order))
+head(logcpm_clust3)
+```
+```{r}
+logcpm_clust3 %>% 
+  ggplot(aes(x = sample_type, y = z)) +
+  facet_wrap(~ cluster_name, ncol = 6)+
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_line(aes(group = miR), alpha = 0.8, color = "grey40") +
+  stat_summary(geom = "line", aes(group = cluster_name, 
+                                  color = cluster_name), 
+               fun.y = mean, size = 2, alpha = 0.8) +
+  scale_x_discrete(labels = c("egg", "seedling", "sperm")) +
+  scale_y_continuous(breaks = c(-1, 0, 1)) +
+  labs(x = NULL,
+       y = "z score") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust= 1)) +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 17, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black"))
+
+ggsave(filename = "miR_clusters.svg", width = 5.6, height = 4.8)
+ggsave(filename = "miR_clusters.png", width = 5.6, height = 4.8)
+```
+```{r}
+ggplot(logcpm_clust3,
+       aes(x =sample_type, y = miR)) +
+  facet_grid(reorder(cluster_name, order) ~ ., scales = "free") + 
+  geom_tile(aes(fill = z)) +
+  scale_fill_gradientn(colours = rev(brewer.pal(11, "Spectral"))) +
+  labs(fill = "z score",
+       x = NULL) +
+  scale_x_discrete(labels = c("egg", "seedling", "sperm")) +
+  theme_minimal() +
+  theme(legend.key.height = unit(1.5, "lines")) +
+  theme(text = element_text(size= 14, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
+  theme(axis.text.y = element_blank()) 
+
+ggsave(filename = "miR_heatmap.png", width = 3, height = 8)
+```
+
+#correlation between PC and miRNA clusters
+```{r}
+logcpm_l1 <- logcpm %>% 
+  mutate(miR = row.names(logcpm)) %>% 
+  gather("sample_ID", "logCPM", 1:26) %>% 
+  mutate(sample_type = case_when(
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" |
+      sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "egg",
+    sample_ID == "SP5b" |
+      sample_ID == "SP5c" |
+      sample_ID == "BS1" |
+      sample_ID == "BS2" |
+      sample_ID == "BS4a" |
+      sample_ID == "BS4b" |
+      sample_ID == "BS6a" |
+      sample_ID == "BS6b"  ~ "sperm", 
+    sample_ID == "B15" |
+      sample_ID == "B20" |
+      sample_ID == "B25" |
+      sample_ID == "SD4" ~ "seedling shoot", 
+    sample_ID == "OV1a" |
+      sample_ID == "OV1b" |
+      sample_ID == "OV2" ~ "ovary",
+    sample_ID == "root" ~ "root",
+    sample_ID == "ddm1" |
+      sample_ID == "ddm1_con" |
+      sample_ID == "drm2" |
+      sample_ID == "drm2_con" ~ "leaf"
+  )) %>% 
+  as.data.frame() 
+```
+```{r}
+clust_log <- temp3 %>% 
+  inner_join(logcpm_l1, by = "miR") 
+```
+```{r}
+sex <- clust_log %>% 
+  group_by(cluster_name, sample_ID) %>% 
+  summarise(mean.logCPM = mean(logCPM)) %>% 
+  mutate(cluster = paste("cluster", cluster_name, sep = "_")) %>% 
+  ungroup() %>% 
+  select(-cluster_name) %>% 
+  spread(cluster, mean.logCPM) %>% 
+  mutate(sample_type = case_when(
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" |
+      sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "egg",
+    sample_ID == "SP5b" |
+      sample_ID == "SP5c" |
+      sample_ID == "BS1" |
+      sample_ID == "BS2" |
+      sample_ID == "BS4a" |
+      sample_ID == "BS4b" |
+      sample_ID == "BS6a" |
+      sample_ID == "BS6b"  ~ "sperm", 
+    sample_ID == "B15" |
+      sample_ID == "B20" |
+      sample_ID == "B25" |
+      sample_ID == "SD4" ~ "seedling shoot", 
+    sample_ID == "OV1a" |
+      sample_ID == "OV1b" |
+      sample_ID == "OV2" ~ "ovary",
+    sample_ID == "root" ~ "root",
+    sample_ID == "ddm1" |
+      sample_ID == "ddm1_con" |
+      sample_ID == "drm2" |
+      sample_ID == "drm2_con" ~ "leaf"
+  )) %>% 
+  mutate(type = case_when(
+    sample_type == "egg" |
+      sample_type == "ovary" ~ "female",
+    sample_type == "sperm"  ~ "male",
+    sample_type == "seedling shoot" | 
+      sample_type == "leaf" |
+      sample_type == "root" ~ "vegetative"
+  )) %>% 
+   mutate(type = factor(type, levels = c("female", "vegetative", "male")))
+
+
+sex %>% head(10)
+```
+
+```{r}
+pseudo_pc <- pc_nice %>% 
+  select(sample_ID, sample_type, PC1, PC2, type) %>% 
+  inner_join(sex, by = c("sample_ID", "sample_type", "type"))
+
+head(pseudo_pc)
+```
+
+```{r}
+pseudo_pc_mat <- pseudo_pc[, -c(1,2,5)] 
+
+row.names(pseudo_pc_mat) <- paste(pseudo_pc$sample_ID, pseudo_pc$sample_type, pseudo_pc$type, sep = ";")
+
+pseudo_pc_mat
+```
+```{r}
+#pseudo_pc_mat
+cor_ps <- cor(pseudo_pc_mat)[1:2, ] %>% 
+  as.data.frame() %>% 
+  mutate(PC = c("PC1", "PC2")) %>% 
+  select(-PC1, -PC2) %>% 
+  gather("cluster", "cor", 1:nrow(temp3 %>% distinct(cluster_name))) %>% 
+  mutate(cluster = factor(cluster, levels = c("cluster_1",
+    "cluster_2",
+    "cluster_3",
+    "cluster_4",
+    "cluster_5",
+    "cluster_6",
+    "cluster_7",
+    "cluster_8",
+    "cluster_9",
+    "cluster_10",
+    "cluster_11",
+    "cluster_12"))) %>%
+  group_by(PC) %>% 
+  arrange(-cor) %>% 
+  mutate(cluster_name = substring(cluster, 9)) %>% 
+  mutate(cluster_name = as.numeric(cluster_name)) %>% 
+  inner_join(cluster_order, by = "cluster_name") 
+
+ cor_ps
+
+```
+```{r}
+cor_ps %>% 
+  group_by(PC) %>% 
+  ggplot(aes(x = PC, y = cluster)) + 
+  geom_tile(aes(fill = cor)) +
+  scale_fill_gradientn(colours = rev(brewer.pal(11, "Spectral"))) +
+   geom_text(aes(label = cor %>% round(3)), size = 5, fontface = "bold") +
+  theme_minimal() +
+  labs(x = NULL, 
+       y = NULL) +
+  theme(legend.position = "bottom") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) +
+  theme(legend.key.width = unit(2.5, "lines"))
+
+
+ggsave(filename = "PC_vs_clusters.svg", width = 4.2, height = 5)
+ggsave(filename = "PC_vs_clusters.png", width = 4.2, height = 5)
+```
+
+```{r}
+sex %>% 
+  mutate(sample_type1 = case_when(
+    sample_type == "seedling shoot" ~ "seedling\nshoot",
+    sample_type != "seedling shoot" ~ sample_type
+  )) %>% 
+  ggplot(aes(x = cluster_1, y = cluster_8)) +
+  stat_ellipse(aes(fill = type), alpha = 0.3, level = 0.9, type = "t", geom = "polygon") +
+  geom_point(aes(color = sample_type), size = 2, alpha = 0.8) + 
+  labs(fill = NULL, 
+       color = NULL,
+       x = paste("logCPM cluster 2, n = ", 
+                 temp3 %>%
+                   filter(cluster_name == 2 ) %>% 
+                   count(), 
+                 " miR", sep = ""),  
+       y = paste("logCPM cluster 8, n = ", 
+                 temp3 %>%
+                   filter(cluster_name == 8 ) %>% 
+                   count(), 
+                 " miR", sep = "")) +
+  scale_color_manual(values = c("darkgreen", "grey40", "seagreen", "orangered3", "tomato1", "dodgerblue2"),
+                     limits = c("leaf", "root", "seedling\nshoot", "ovary", "egg", "sperm")) +
+  theme_minimal() +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave(filename = "miR_pseudo_PCR.svg", width = 5, height = 4)
+ggsave(filename = "miR_pseudo_PCR.png", width = 5, height = 4)
+```
+
+#PCA (each dot is a miRNA, not library) 
+```{r}
+#include all WT libraries
+logcpm_long2 <- logcpm %>% 
+  mutate(miR = row.names(logcpm)) %>% 
+  gather("sample_ID", "logCPM", 1:26) %>%  #collect logCPM
+  mutate(sample_type = case_when(          #identify samples
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" |
+      sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "egg",
+    sample_ID == "SP5b" |
+      sample_ID == "SP5c" |
+      sample_ID == "BS1" |
+      sample_ID == "BS2" |
+      sample_ID == "BS4a" |
+      sample_ID == "BS4b" |
+      sample_ID == "BS6a" |
+      sample_ID == "BS6b"  ~ "sperm", 
+    sample_ID == "B15" |
+      sample_ID == "B20" |
+      sample_ID == "B25" |
+      sample_ID == "SD4" ~ "seedling shoot", 
+    sample_ID == "OV1a" |
+      sample_ID == "OV1b" |
+      sample_ID == "OV2" ~ "ovary",
+    sample_ID == "root" ~ "root",
+    sample_ID == "ddm1" |
+      sample_ID == "ddm1_con" |
+      sample_ID == "drm2" |
+      sample_ID == "drm2_con" ~ "leaf"
+  )) %>% 
+  filter(sample_type != "drm2") %>%
+  filter(sample_type != "ddm1") %>%  #remove mutants
+  group_by(sample_type, miR) %>% 
+  summarise(logCPM = mean(logCPM)) %>%   #average reps up to sample type
+  ungroup() %>% 
+  group_by(miR) %>% 
+  mutate(z = (logCPM - mean(logCPM))/sd(logCPM)) %>% #z score transformation
+  as.data.frame()
+  
+logcpm_long2 %>% head(10)
+```
+```{r}
+z2 <- logcpm_long2[, c(1, 2, 4)] %>% 
+  spread(sample_type, z) %>% 
+  as.data.frame()
+
+row.names(z2) <- z2$miR
+z2 
+```
+
+```{r}
+pc2 <- prcomp(z2[, 2:7]) 
+pc2_importance <- as.data.frame(t(summary(pc2)$importance))
+pc2_importance
+```
+```{r}
+ggplot(pc2_importance, aes(x = 1:length( `Proportion of Variance`), y = `Proportion of Variance`) ) +
+  geom_bar(stat = 'identity') +
+  xlab('dimension') +
+  theme_classic()
+```
+```{r}
+ggplot(pc2_importance, aes(x = 1:length(`Cumulative Proportion`), y = `Cumulative Proportion`) ) +
+  geom_point() +
+  xlab('dimension') +
+  ylab('cumulative variance') +
+  ylim(c(0, 1.1))+
+  theme_classic()
+```
+
+
+
+```{r}
+max <- logcpm_long2 %>% 
+  group_by(miR) %>% 
+  summarise(z = max(z))
+head(max)
+```
+```{r}
+logcpm_max <- max %>% 
+  inner_join(logcpm_long2, by = c("z", "miR")) 
+
+head(logcpm_max)
+```
+```{r}
+pc_coord <- pc2$x %>% 
+  as.data.frame() %>% 
+  mutate(miR = row.names(pc2$x)) %>% 
+  inner_join(logcpm_max, by = "miR") %>% 
+  mutate(type = case_when(
+    sample_type == "seedling shoot" |
+      sample_type == "root" |
+      sample_type == "leaf" ~ "vegetative",
+    sample_type == "egg" |
+      sample_type == "ovary" ~ "female",
+    sample_type == "sperm" ~ "male"
+  )) %>% 
+  mutate(type = factor(type, levels = c("female", "vegetative", "male")))
+
+head(pc_coord)
+```
+```{r}
+pc_coord %>% 
+  mutate(sample_type1 = case_when(
+    sample_type == "seedling shoot" ~ "seedling\nshoot",
+    sample_type != "seedling shoot" ~ sample_type
+  )) %>% 
+  ggplot(aes(PC1, PC2)) +
+  geom_point(size = 2, alpha = 0.7, aes(color = sample_type)) +
+  stat_ellipse(aes(fill = type), alpha = 0.3, level = 0.9, type = "t", geom = "polygon") +
+  # stat_ellipse(aes(group = cluster_name %>% as.factor()), level = 0.9, type = "t", linetype = 4) +
+  labs(x = paste("PC1 (", pc2_importance$`Proportion of Variance`[1] %>% signif(3)*100, "% of Variance)", sep = ""), 
+       y = paste("PC2 (", pc2_importance$`Proportion of Variance`[2] %>% signif(3)*100, "  ", "% of Variance)", sep = ""),
+       color = "peak exp.",
+       fill = NULL) +
+  scale_color_manual(values = c("darkgreen", "grey40", "seagreen", "orangered3", "tomato1", "dodgerblue2"),
+                     limits = c("leaf", "root", "seedling\nshoot", "ovary", "egg", "sperm")) +
+  theme_minimal() +
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black"))
+
+ggsave("PC_plot_dot_is_miR.svg", height = 5, width = 6)
+ggsave("PC_plot_dot_is_miR.png", height = 5, width = 6)
+```
+
+
+#differential expressions
+##visualization on per million miRNA scale
+```{r}
+sample_des_lib_ov <- sample_des_lib %>% 
+  filter(sample_type == "egg" |
+            sample_type == "ovary")
+
+sample_des_lib_ov
+```
+```{r}
+cts_matrix_ov <- cts_matrix %>% 
+  select(E2, E3, E4, E9a, E9b, E9c, OV1a, OV1b, OV2)
+
+head(cts_matrix_ov)
+```
+
+```{r}
+o <- DGEList(counts = cts_matrix_ov ,group=sample_des_lib_ov$sample_type, lib.size = sample_des_lib_ov$`total read`)    
+o$samples
+
+keep <- rowSums(cpm(o)> 0) >= 2 
+o <- o[keep, , keep.lib.sizes = T]
+o <- calcNormFactors(o, method = "TMM")
+#calcNormFactors calculates normalization factors using TMM
+o$samples
+
+
+design <- model.matrix(~0 + sample_des_lib_ov$sample_type)
+o <- estimateDisp(o, design)
+```
+```{r}
+fit <- glmQLFit(o, design, robust = T) 
+ov <- glmTreat(fit, contrast = c(-1, 1))
+```
+```{r}
+deov <- ov$table %>% 
+  mutate(FDR = p.adjust(PValue, method = "fdr")) %>% 
+  mutate("sig"=ifelse(FDR < 0.05,"s","ns")) %>%
+  mutate("miR" = row.names(ov$table))
+
+deov %>% head(10)
+```
+```{r}
+deov %>% 
+  arrange(-logFC) %>% 
+  filter(sig == "s") %>% 
+  filter(logFC > 0)
+
+deov %>% 
+  filter(sig == "s") %>% 
+  filter(logFC > 0) %>% write_excel_csv("differential expression egg and ovary.csv")
+```
+```{r}
+ao <- DGEList(counts = cts_matrix_ov ,group=sample_des_lib_ov$sample_type)    
+ao$samples
+
+keep <- rowSums(cpm(ao)> 0) >= 3 
+ao <- ao[keep, , keep.lib.sizes = F]
+ao <- calcNormFactors(ao, method = "TMM")
+#calcNormFactors calculates normalization factors using TMM
+ao$samples
+
+
+design <- model.matrix(~0 + sample_des_lib_ov$sample_type)
+ao <- estimateDisp(ao, design)
+```
+
+
+
+```{r}
+counts_per_M_miR_ov <- cpm(ao, log =F) %>% as.data.frame()
+
+cpm_ov_l <- counts_per_M_miR_ov %>% 
+  mutate(miR = row.names(counts_per_M_miR_ov)) %>% 
+  gather("sample_ID", "CPM", 1:9) %>% 
+  group_by(miR) %>% 
+  mutate(z.s = (CPM - mean(CPM))/sd(CPM)) %>%
+   mutate(sample_type = case_when(
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" |
+      sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "egg",
+    sample_ID == "OV1a" |
+      sample_ID == "OV1b" |
+      sample_ID == "OV2" ~ "ovary")) 
+
+
+head(cpm_ov_l)
+```
+
+
+```{r}
+ deov %>% 
+  filter(sig == "s") %>% 
+  filter(logFC > 1) %>% 
+  inner_join(cpm_ov_l, by = "miR") %>% 
+  filter(str_detect(miR, "166a|166b|166e|166k-5p|166g|166h|5519|5790")) %>% 
+  mutate(header = substr(miR, start = 5, stop = 100)) %>% 
+  ggplot(aes(x = sample_type, y = CPM)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  stat_summary(geom = "line", aes(group = miR, color = -log10(FDR)), fun.y = mean, size = 2, alpha = 0.8, lineend = "round") +
+  stat_summary(geom = "errorbar", fun.data = "mean_cl_boot", width = 0.3) +
+  #geom_point(alpha = 0.8) +
+  facet_wrap(~ header, scales = "free_y", ncol = 4) +
+  labs(x = NULL,
+       y = "counts per million miR reads",
+       color = "-log10(FDR)") +
+  scale_color_gradientn(colours = brewer.pal(9, "YlOrRd")[c(6:9)], breaks = c(2, 3)) +
+  scale_x_discrete(labels = c("egg", "ovary")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  theme(legend.key.width = unit(1, "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust= 1)) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave(filename = "DE_miR_ov_egg.svg", width = 8, heigh = 4.8) 
+ggsave(filename = "DE_miR_ov_egg.png", width = 8, heigh = 4.8) 
+```
+
+
+
+#miR159 expression
+```{r}
+a <- DGEList(counts = cts_matrix ,group=sample_des_lib_pca$sample_type)    
+a$samples
+
+keep <- rowSums(cpm(a)> 0) >= 3 
+a <- a[keep, , keep.lib.sizes = F]
+a <- calcNormFactors(a, method = "TMM")
+#calcNormFactors calculates normalization factors using TMM
+a$samples
+```
+```{r}
+counts_per_M_miR <- cpm(a, log =F) %>% as.data.frame()
+write.csv(cpm, "miR_cpm.csv")
+write.csv(counts_per_M_miR, "miR_counts_per_M_miRNA.csv")
+```
+
+```{r}
+cpm_l <- counts_per_M_miR %>% 
+  mutate(miR = row.names(counts_per_M_miR)) %>% 
+  gather("sample_ID", "CPM", 1:26) %>% 
+  group_by(miR) %>% 
+  mutate(z.s = (CPM - mean(CPM))/sd(CPM)) %>%
+   mutate(sample_type = case_when(
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" |
+      sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "egg",
+      sample_ID == "SP5b" |
+      sample_ID == "SP5c" |
+      sample_ID == "BS1" |
+      sample_ID == "BS2" |
+      sample_ID == "BS4a" |
+      sample_ID == "BS4b" |
+      sample_ID == "BS6a" |
+      sample_ID == "BS6b"  ~ "sperm", 
+      sample_ID == "B15" |
+      sample_ID == "B20" |
+      sample_ID == "B25" |
+      sample_ID == "SD4" ~ "seedling shoot", 
+      sample_ID == "OV1a" |
+      sample_ID == "OV1b" |
+      sample_ID == "OV2" ~ "ovary",
+      sample_ID == "root" ~ "root",
+      sample_ID == "ddm1" |
+      sample_ID == "ddm1_con" |
+      sample_ID == "drm2" |
+      sample_ID == "drm2_con" ~ "leaf"
+    )) %>% 
+  filter(sample_ID != "ddm1") %>% 
+  filter(sample_ID != "drm2") 
+
+
+head(cpm_l)
+```
+
+```{r}
+miR159_tb <- cpm_l %>% 
+  filter(str_detect(miR, "miR159"))
+
+miR159_tb
+```
+ 
+
+##miR159 by total smRNA in each sample type
+```{r}
+cts_l <- cts_matrix %>%
+  mutate(miR = row.names(cts_matrix)) %>% 
+  gather("sample_ID", "count", 1:26) %>% 
+  inner_join(sample_des_lib, by = "sample_ID") 
+
+head(cts_l)
+```
+
+```{r}
+miR159_tb_s <- cts_l %>%
+  filter(str_detect(miR, "miR159")) %>% 
+  group_by(sample_ID, sample_type, genotype) %>% 
+  summarise(total.count = sum(count)) %>% 
+  ungroup() %>% 
+  inner_join(smRNA_comp, by = "sample_ID") %>% 
+  mutate(proportion = total.count / miRNA) %>% 
+  group_by(sample_type, genotype) %>% 
+  summarise(mean.proportion = mean(proportion))
+
+miR159_tb_s
+
+write_excel_csv(miR159_tb_s, "miR159 proprotion out of total miRNA.csv")
+```
+```{r}
+miR159_tb <- cts_l %>%
+  filter(str_detect(miR, "miR159")) %>% 
+  mutate(CPM = count / miRNA * 10^6) %>% 
+  inner_join(osa_mir[, 2:3], by = "miR") %>% 
+  group_by(sequence, sample_type, genotype, sample_ID) %>% 
+  summarise(CPM = sum(CPM)) %>% 
+  inner_join(osa_mir_unique[, 2:3], by = "sequence") %>% 
+  mutate(miR2 = case_when(
+    str_detect(miR, "a.1") ~ "osa-miR159a.1/b",
+    str_detect(miR, "a.1") == F ~ miR
+  ))
+
+miR159_tb
+```
+
+```{r}
+miR159_tb %>% 
+  filter(sample_type == "egg"|
+           sample_type == "ovary"|
+           sample_type == "sperm"|
+           sample_type == "seedling shoot") %>% 
+  mutate(header = substr(miR2, start = 5, stop = 100))%>%
+  mutate(sample_type.f = factor(sample_type, levels = c(
+    "ovary", "egg", "seedling shoot", "sperm"
+  ))) %>% 
+  ggplot(aes(x = sample_type.f, y = CPM)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_bar(stat = "summary", aes(fill = sample_type), alpha = 0.8, fun.y = mean) +
+  stat_summary(geom = "errorbar", aes(group = sample_type), fun.data = "mean_cl_boot", width = 0.3) +
+  facet_wrap(~ header, ncol = 2, scales = "free_y") + 
+  scale_x_discrete(labels = NULL) + 
+  scale_fill_manual(values = c("orangered3", "tomato1", "seagreen", "dodgerblue2"),
+                   limits = c("ovary", "egg", "seedling shoot", "sperm")) +
+  labs(x = NULL,
+       y = "counts per million miRNA reads",
+       fill = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(axis.text.x = element_text(angle = 45, hjust= 1)) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black", size = 18)) +
+  theme(axis.text.y=element_text(colour = "black")) +
+  theme(strip.text.x=element_text(colour = "black", size = 12)) 
+
+ggsave(filename = "miR159_gametes.svg", height = 5, width = 4)
+ggsave(filename = "miR159_gametes.png", height = 5, width = 4)
+```
+
+
+
+
+
+
+#Egg vs. egg
+```{r}
+cts_matrix_egg <- cts %>% 
+  select(E2, E3, E4, E9a, E9b, E9c)
+
+row.names(cts_matrix_egg) <- cts$miR
+
+sample_des_egg <- sample_des_lib %>% 
+  filter(sample_type == "egg") %>% 
+  mutate(batch = case_when(
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4" ~ "batch 1" ,
+    str_detect(sample_ID, "9") ~ "batch 2"
+  ))
+
+sample_des_egg
+```
+```{r}
+e <- DGEList(counts=cts_matrix_egg ,group=sample_des_egg$batch, lib.size = sample_des_egg$`total read`)    
+e$samples
+```
+```{r}
+keep <- rowSums(cpm(e)> 1) >= 3 
+e <- e[keep, , keep.lib.sizes = T]
+e <- calcNormFactors(e, method = "TMM")
+#calcNormFactors calculates normalization factors using TMM
+e$samples
+```
+```{r}
+design <- model.matrix(~0 + sample_des_egg$batch)
+e <- estimateDisp(e, design)
+```
+```{r}
+ecpm <- cpm(e, log =F) %>% as.data.frame()
+elogcpm <- cpm(e, log =T) %>% as.data.frame()    #lib.size = sample_des$total_smRNA
+#write.csv(ecpm, "egg_gene_siRNA_CPM.csv")
+#adonis((t(log(cpm+1))) ~ sample_type * genotype, sample_des, method= "e")
+adonis((t(elogcpm)) ~ batch, sample_des_egg, method= "e")
+```
+```{r}
+fitegg <- glmQLFit(e, design, robust = T)
+batch_egg <- glmTreat(fitegg, contrast = c(-1, 1), lfc=1)
+```
+```{r}
+deegg <- batch_egg$table %>% 
+  mutate(FDR = p.adjust(PValue, method = "fdr")) %>% 
+  mutate("sig"=ifelse(FDR < 0.05,"s","ns")) %>%
+  mutate("miR" = row.names(batch_egg$table)) %>% 
+  arrange(FDR)
+
+deegg %>% head(10)
+```
+```{r}
+ae <- DGEList(counts=cts_matrix_egg ,group=sample_des_egg$sample_type)    
+ae$samples
+
+keep <- rowSums(cpm(ae)> 0) >= 0 
+ae <- ae[keep, , keep.lib.sizes = F]
+ae <- calcNormFactors(ae, method = "TMM")
+#calcNormFactors calculates normalization factors using TMM
+ae$samples
+
+design <- model.matrix(~0 + sample_des_egg$batch)
+ae <- estimateDisp(ae, design)
+```
+```{r}
+egg_counts_per_M_miR <- cpm(ae, log =F) %>% as.data.frame()
+head(egg_counts_per_M_miR)
+```
+
+```{r}
+ecpm_l <- egg_counts_per_M_miR %>% 
+  mutate(miR = row.names(egg_counts_per_M_miR)) %>% 
+  gather("sample_ID", "CPM", 1:6) %>% 
+  #group_by(miR) %>% 
+  #mutate(z.s = (CPM - mean(CPM))/sd(CPM)) %>%
+  mutate(sample_type = case_when(
+    sample_ID == "E2" |
+      sample_ID == "E3" |
+      sample_ID == "E4"  ~ "batch 1", 
+    sample_ID == "E9a" |
+      sample_ID == "E9b" |
+      sample_ID == "E9c" ~ "batch 2"
+  )) %>% 
+  as.data.frame()
+head(ecpm_l)
+```
+```{r}
+deegg %>% 
+  filter(sig == "s") %>% 
+  inner_join(ecpm_l, by = "miR") %>% 
+  #filter(type == "female") %>% 
+  ggplot(aes(x = sample_type, y = CPM)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  stat_summary(geom = "line", aes(group = miR, color = -log10(FDR)), fun.y = mean, size = 2, alpha = 0.8) +
+  geom_point(alpha = 0.8) +
+  facet_wrap(~ miR, scales = "free_y", ncol = 4) +
+  labs(x = NULL,
+       y = "counts per million miR reads",
+       color = "-log10(FDR)") +
+  scale_color_gradientn(colours = brewer.pal(9, "YlOrRd")[c(6:9)]) +
+  scale_x_discrete(labels = c("batch 1", "batch 2")) +
+  theme_minimal() +
+  theme(legend.position = "bottom") + 
+  theme(legend.key.width = unit(2, "lines")) +
+  theme(axis.text.x = element_text(angle = 45, hjust= 1)) +
+  theme(strip.text.x = element_text(size = 10)) +
+  theme(text = element_text(size = 12, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave(filename = "DE_egg_across_batches.svg", width = 8, heigh = 8)
+ggsave(filename = "DE_egg_across_batches.png", width = 8, heigh = 8) 
+```
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
