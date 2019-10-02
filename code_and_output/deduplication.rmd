@@ -1,0 +1,160 @@
+---
+title: "PCR duplicates"
+author: "Chenxin Li"
+date: "9/14/2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+library(rsq)
+```
+
+#data
+```{r}
+deduplication <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/deduplication.xlsx")
+
+sample_des <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/sample_des_revision.xlsx")
+
+smRNA_comp <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/code and output/smRNA_comp.csv")
+```
+```{r}
+deduplication1 <- deduplication %>% 
+  left_join(sample_des, by = "sample_ID") %>% 
+  mutate(sample_type1 = case_when(
+    str_detect(sample_ID, "P18|P20|P25") ~ "seedling\nprotoplast",
+    str_detect(sample_ID, "B15|B20|B25|SD4") ~ "seedling\nshoot",
+    str_detect(sample_ID, "P18|P20|P25|B15|B20|B25|SD4") == F ~ sample_type
+  ))
+
+deduplication1
+```
+
+#linear models
+```{r}
+logit <- function(p){log(
+  p / (1-p)
+)}
+invlogit <- function(x){
+  1/(1 + exp(-x))
+}
+```
+
+
+```{r}
+#by input
+model_input <- lm(logit(bad) ~ input_ng, data = deduplication1)
+summary(model_input)
+```
+```{r}
+#by PCR
+model_PCR <- lm(logit(bad) ~ PCR, data = deduplication1)
+summary(model_PCR)
+```
+```{r}
+coef_input <- summary(model_input)$coefficient
+coef_input
+
+rsq_input <- summary(model_input)$r.squared 
+```
+```{r}
+coef_PCR <- summary(model_PCR)$coefficient
+coef_PCR
+
+rsq_PCR <- summary(model_PCR)$r.squared
+```
+
+
+#visualize
+```{r}
+fitted_input <- data.frame(input_ng = seq(0, 55, by = 1)) %>% 
+  mutate(bad = invlogit(coef_input[2, 1] * input_ng + coef_input[1, 1]))
+
+head(fitted_input)
+```
+
+```{r}
+deduplication1 %>% 
+  ggplot(aes(x = input_ng, y = bad * 100)) +
+  geom_hline(yintercept = 100, linetype = 4, size = 1.1) +
+  geom_line(data = fitted_input, size = 1.2, alpha = 0.8, color = "steelblue4") +
+  geom_point(size = 3, alpha = 0.8, color = "white", shape = 21, aes(fill = sample_type1)) +
+  annotate(geom = "text", x = 20, y = 87, label = paste("y = ", "1/(1 + exp-(",
+                                                        coef_input[2, 1] %>% signif(2), 
+                                                        "x +", 
+                                                        coef_input[1, 1] %>% signif(2),
+                                                        "))", "\n", 
+                                                        "R^2 = ", 
+                                                         rsq_input %>% signif(2) ,sep = ""),
+           size = 5, fontface = "bold") + 
+  scale_fill_manual(values = c("seagreen", "aquamarine4", "orangered3", "tomato1", "dodgerblue2"),
+                    limits = c("seedling\nshoot", "seedling\nprotoplast", "ovary", "egg", "sperm")) + 
+  labs(x = "input/ng",
+       y = "% PCR duplicates",
+       fill = NULL) +
+  guides(fill = guide_legend(nrow = 2)) +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.direction = "horizontal") +
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave("PCR_duplicates_by_input.svg", height = 6, width = 5)
+ggsave("PCR_duplicates_by_input.png", height = 6, width = 5)
+```
+```{r}
+fitted_PCR <- data.frame(PCR = seq(13, 28, by = 1)) %>% 
+  mutate(bad = invlogit(coef_PCR[2, 1] * PCR + coef_PCR[1, 1]))
+
+head(fitted_PCR)
+```
+
+```{r}
+deduplication1 %>% 
+  ggplot(aes(x = PCR, y = bad * 100)) +
+  geom_hline(yintercept = 100, linetype = 4, size = 1.1) +
+  geom_line(data = fitted_PCR, size = 1.2, alpha = 0.8, color = "steelblue4") +
+  geom_point(size = 3, alpha = 0.8, color = "white", shape = 21, aes(fill = sample_type1)) +
+  annotate(geom = "text", x = 23, y = 87, label = paste("y = ", "1/(1 + exp-(",
+                                                        coef_PCR[2, 1] %>% signif(2), 
+                                                        "x", 
+                                                        coef_PCR[1, 1] %>% signif(2),
+                                                        "))", "\n", 
+                                                        "R^2 = ", 
+                                                         rsq_PCR %>% signif(2) ,sep = ""),
+           size = 5, fontface = "bold") + 
+  scale_fill_manual(values = c("seagreen", "aquamarine4", "orangered3", "tomato1", "dodgerblue2"),
+                    limits = c("seedling\nshoot", "seedling\nprotoplast", "ovary", "egg", "sperm")) + 
+  labs(x = "number of PCR cycles",
+       y = "% PCR duplicates",
+       fill = NULL) +
+  guides(fill = guide_legend(nrow = 2)) +
+  theme_minimal() +
+  theme(legend.position = "bottom", legend.direction = "horizontal") +
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.x=element_text(colour = "black")) +
+  theme(axis.text.y=element_text(colour = "black")) 
+
+ggsave("PCR_duplicates_by_PCR.svg", height = 6, width = 5)
+ggsave("PCR_duplicates_by_PCR.png", height = 6, width = 5)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

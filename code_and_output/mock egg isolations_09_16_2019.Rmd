@@ -1,0 +1,213 @@
+---
+title: "mock egg isolations"
+author: "Chenxin Li"
+date: "11 - 21 - 2017"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(svglite)
+```
+
+# NENO qubit after bead clean up
+```{r}
+NENO_Qubit <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_NENO/NENO_Qubit.csv")
+NENO_Qubit$library <- as.factor(NENO_Qubit$library)
+NENO_Qubit$sample_type <- as.factor(NENO_Qubit$sample_type)
+```
+```{r}
+model_neno_q <- lm(qubit_nM ~ sample_type, data = NENO_Qubit)
+
+NENO.test <- t.test(qubit_nM ~ sample_type, NENO_Qubit)
+#str(NENO.test)
+NENO.test
+
+est_neno_q <- lsmeans(model_neno_q, trt.vs.ctrl~sample_type)
+est_neno_q_bar <- as.data.frame(summary(est_neno_q)$lsmeans)
+
+sdn <- NENO_Qubit[1:2,4] %>% var() %>% sqrt()
+sen <- sdn/sqrt(2)
+sde <- NENO_Qubit[3:8,4] %>% var() %>% sqrt()
+see <- sde/sqrt(6)
+
+se_by_group_q <- c(see, sen)
+est_neno_q_bar$se_by_group <- se_by_group_q
+```
+
+```{r}
+ggplot(NENO_Qubit, aes(x= sample_type, y= qubit_nM)) +
+  geom_bar(stat = "summary", fun.y = "mean" , aes(fill = sample_type)) +
+  geom_point(aes()) +
+  ylab("yield(nM)") +
+  xlab("sample type")+
+  guides(fill =guide_legend(title="sample type")) +
+  theme_bw() +
+  theme(legend.position = "none") 
+
+ 
+```
+
+```{r}
+2.05/33.08
+```
+Mock is ~6% of true egg libraries
+
+
+#qPCR
+##Qubit quantification of qPCR standard
+Standard is 49% CG, amplicon from plasmid = 109bp, with P5 (20bp) and P7 (24bp) sequence, total = 109 + 20 + 24 = 153bp.  
+
+original concentration of standard is 65ng/ul by qubit
+length is 153 bp. 
+```{r}
+65/660/153 * 10^6
+65/660/153 * 10^6 *10^-9 * 6.02*10^23 * 1 *10^-6
+```
+Molarity = 644nM. 
+387502475738 molecules per 1uL. 
+
+##analysis of qPCR results  
+```{r}
+qPCR_2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_NENO/Li_2017_12_05_qPCR/qPCR_2.csv")
+qPCR_2$sample_type <- as.factor(qPCR_2$sample_type)
+qPCR_2$sample_name <- as.factor(qPCR_2$sample_name)
+qPCR_2$tech_rep <- as.factor(qPCR_2$tech_rep)
+qPCR2_standard <- filter(qPCR_2, sample_type == "standard")
+qPCR2_samples <- filter(qPCR_2, sample_type != "standard")
+
+```
+
+
+```{r}
+standard_model2 <- lm(log10(molecule)~Cq, data = qPCR2_standard)
+summary(standard_model2)
+
+ggplot(qPCR2_standard, aes(x = Cq,y = log10(molecule))) +
+  geom_point(aes(shape = tech_rep),size = 3, alpha = .8) +
+  geom_smooth(method='lm') +
+  theme_bw() +
+  labs(x = "Number of Cycles", y = "log10 Molecule Count") +
+  guides(shape =guide_legend(title="technical reps"))
+```
+log10(molecule count) = -0.272658 * Cq + 10.845645, R^2 = 0.9976.
+```{r}
+coefs <- summary(standard_model2)
+#str(coefs)
+coefs$coefficients
+intercept <- coefs$coefficients[1,1] %>% signif(digits = 3)
+slope <- coefs$coefficients[2,1] %>% signif(digits = 3)
+```
+
+```{r}
+cor <- cor.test(qPCR2_standard$Cq, log10(qPCR2_standard$molecule))
+
+ggplot(qPCR2_standard, aes(x= Cq, y= log10(molecule))) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_smooth(method='lm') +
+  geom_point(aes(color = tech_rep),size = 3, alpha = .8)+
+  labs(color = "technical reps",
+       y = "log10(molecules)") +
+  annotate(geom = "text", 
+           label = paste("cor = ", cor$estimate %>% signif(digits = 3), sep = ""), 
+           x = 20, y = 8.5, size = 5, fontface = "bold") +
+  annotate(geom = "text", 
+           label = paste( "R^2 = ", 
+                         coefs$adj.r.squared %>% signif(digits = 3), sep = ""), 
+           x = 20, y = 8, size = 5, fontface = "bold") +
+  ggtitle( paste("log10(molecules) = ", 
+                         slope, "* Cq + ", intercept, sep = "")) +
+  
+  theme_minimal() +
+  theme(text = element_text(size = 14, face="bold")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(legend.position = c(0.2, 0.2))
+
+ggsave(filename = "qPCR_standard_curve.svg", width = 4.5, height = 4.5)
+ggsave(filename = "qPCR_standard_curve.png", width = 4.5, height = 4.5)
+```
+
+
+```{r}
+# inspect variation among technical reps
+
+ggplot(qPCR2_samples, aes(x = sample_type, y = Cq)) + 
+  geom_point(aes(color = sample_name), position = position_dodge(0.3), alpha = 0.8, size = 2)+
+  guides(color =guide_legend(title="library"))+
+  xlab("sample type") +
+  ylab("Cq")+
+  theme_bw() +
+  theme(text = element_text(size = 14, face="bold")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(axis.text.x = element_text(colour="black")) 
+```
+
+```{r}
+qPCR2_samples <- qPCR2_samples %>% mutate(log.counts = predict(standard_model2, newdata= qPCR2_samples)) %>% mutate(molecule = 10^log.counts)
+
+qPCR2_samples_grouped <-  aggregate(molecule ~ sample_type + sample_name, qPCR2_samples, FUN = mean)
+
+t.test(qPCR2_samples_grouped$molecule ~ qPCR2_samples_grouped$sample_type)
+mean_neno <- mean(filter(qPCR2_samples_grouped, sample_type == "no egg no ovary")$molecule)
+mean_egg <- mean(filter(qPCR2_samples_grouped, sample_type =="egg")$molecule)
+mean_neno/(6.02*10^23)*10^6*10^9*10
+mean_egg/(6.02*10^23)*10^6*10^9*10
+
+se_neno <- sd(filter(qPCR2_samples_grouped, sample_type == "no egg no ovary")$molecule)/sqrt(2)
+se_egg <- sd(filter(qPCR2_samples_grouped, sample_type == "egg")$molecule)/sqrt(6)
+
+sample_type <- c("egg", "no egg no ovary")
+means <- c(mean_egg, mean_neno)
+SEM <- c(se_egg, se_neno)
+qPCR_mean <- data.frame(sample_type, means, SEM)
+```
+
+```{r}
+#qPCR2_samples_grouped
+ggplot(qPCR2_samples_grouped, aes(x = sample_type, y = molecule)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_bar(stat = "summary", fun.y = "mean" , aes(fill = sample_type), alpha = 0.8) +
+  stat_summary(geom = "errorbar",  fun.data = "mean_cl_boot", aes(), width = 0.3) +
+  #geom_point(aes(), color = "grey40", position = position_jitter(0.1)) +
+  ylab("number of molecules") +
+  xlab("")+
+  scale_x_discrete(label = c("egg\nn = 6 biological reps", "mock\nn = 2 biological reps")) +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  theme(text = element_text(size = 14, face="bold")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(axis.text.x = element_text(colour="black")) 
+
+ggsave(filename = "qPCR_quantification.svg", width = 4.5, height = 4.5)
+ggsave(filename = "qPCR_quantification.png", width = 4.5, height = 4.5)
+```
+
+```{r}
+mean_neno
+mean_egg
+mean_neno/mean_egg
+```
+4.2*10^7 / 8.5*10^8 = 0.0496.
+5% of the reads could be from ovary. 
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

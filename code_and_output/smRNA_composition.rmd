@@ -1,0 +1,288 @@
+---
+title: "smRNA_composition"
+author: "Chenxin Li"
+date: "9/3/2019"
+output:
+  html_document:
+    toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2) 
+library(emmeans)   
+library(multcomp) 
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(stringr)
+library(forcats)
+library(lme4)
+library(lmerTest)
+library(RColorBrewer)
+library(svglite)
+```
+
+#load files
+```{r}
+#sperm
+BS1 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/blender-sperm-1_S30_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526853", 
+     col_names = FALSE)
+
+BS2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/BlenderSperm2_S8_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526854", 
+     col_names = FALSE)
+
+BS4a <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/BlenderSperm4a_S173_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526855", 
+     col_names = FALSE)
+
+BS4b <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Blendersperm4b_S176_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526856", 
+     col_names = FALSE)
+
+BS6a <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Blendersperm6a_S174_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526857", 
+     col_names = FALSE)
+
+BS6b <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Blendersperm6b_S177_L007_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526858", 
+     col_names = FALSE)
+
+SP5b <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/sperm-5b_S28_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526885", 
+     col_names = FALSE)
+
+SP5c <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/sperm-5c_S29_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526886", 
+     col_names = FALSE)
+```
+
+```{r}
+#seedling shoot
+B15 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Bulk-15_S26_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526859", 
+     col_names = FALSE)
+
+B20 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Bulk-20_S27_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526860", 
+     col_names = FALSE)
+
+B25 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Bulk-25_S28_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526861", 
+     col_names = FALSE)
+
+SD4 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/seedling4_S3_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526884", 
+     col_names = FALSE)
+```
+
+```{r}
+#leaf 
+ddm1 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/ddm1ab.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526862", 
+     col_names = FALSE)
+
+ddm1_con <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/ddm1ab_control.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526863", 
+     col_names = FALSE)
+
+drm2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/drm2-T-DNA.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526864", 
+     col_names = FALSE)
+
+drm2_con <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/drm2-T-DNA_control.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526865", 
+     col_names = FALSE)
+```
+
+```{r}
+#egg
+E9a <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/egg-9a_S25_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526866", 
+     col_names = FALSE)
+
+E9b <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/egg-9b_S26_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526867", 
+     col_names = FALSE)
+
+E9c <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/egg-9c_S27_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526868", 
+     col_names = FALSE)
+
+E2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/eggcell2_combined.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526869", 
+     col_names = FALSE)
+
+E3 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/eggcell3_combined.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526870", 
+     col_names = FALSE)
+
+E4 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/eggcell4_combined.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526871", 
+     col_names = FALSE)
+```
+
+```{r}
+#spikelets
+S3_1 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048325_9522_S3_1_filtered.fasta.sorted.bam.o1526872", 
+     col_names = FALSE)
+
+S3_2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048326_9522_S3_2_filtered.fasta.sorted.bam.o1526873", 
+     col_names = FALSE)
+
+S3_3 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048327_9522_S3_3_filtered.fasta.sorted.bam.o1526874", 
+     col_names = FALSE)
+
+S5_1 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048328_9522_S5_1_filtered.fasta.sorted.bam.o1526875", 
+     col_names = FALSE)
+
+S5_2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048329_9522_S5_2_filtered.fasta.sorted.bam.o1526876", 
+     col_names = FALSE)
+
+S5_3 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048330_9522_S5_3_filtered.fasta.sorted.bam.o1526877", 
+     col_names = FALSE)
+
+S7_1 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048331_9522_S7_1_filtered.fasta.sorted.bam.o1526878", 
+     col_names = FALSE)
+
+S7_2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048332_9522_S7_2_filtered.fasta.sorted.bam.o1526879", 
+     col_names = FALSE)
+
+S7_3 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/GSM2048333_9522_S7_3_filtered.fasta.sorted.bam.o1526880", 
+     col_names = FALSE)
+```
+
+```{r}
+#ovary (at house)
+OV1a <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/ovary-no-egg-1a_S31_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526881", 
+     col_names = FALSE)
+
+OV1b <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/ovary-no-egg-1b_S32_L002_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526882", 
+     col_names = FALSE)
+
+OV2 <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/Ovarynoegg2_S5_L004_R1_001.fastq.gz.trimmed.dedup.fastq.gz.sorted.bam.o1526883", 
+     col_names = FALSE)
+```
+
+```{r}
+#embryo germination series
+em_dry <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR2544786.filtered.fastq.gz.sorted.bam.o1539984", 
+     col_names = FALSE)
+
+em_12h <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR2544787.filtered.fastq.gz.sorted.bam.o1539985", 
+     col_names = FALSE)
+
+em_24h <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR2544788.filtered.fastq.gz.sorted.bam.o1539986", 
+     col_names = FALSE)
+```
+```{r}
+#developing embryo and endo
+en_7DAF <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR771500.fastq.gz.trimmed.fastq.gz.sorted.bam.o1539987", 
+     col_names = FALSE)
+
+em_7DAF <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR771501.fastq.gz.trimmed.fastq.gz.sorted.bam.o1539988", 
+     col_names = FALSE)
+```
+
+```{r}
+#anther
+an_pre <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049778.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526888", 
+     col_names = FALSE)
+
+an_mei <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049779.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526889", 
+     col_names = FALSE)
+
+an_mic <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049780.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526890", 
+     col_names = FALSE)
+
+an_bi <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049781.1.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526891", 
+     col_names = FALSE)
+```
+
+```{r}
+#ovary published
+ov_1st <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049786.1.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526892", 
+     col_names = FALSE)
+
+ov_2nd <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049787.1.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526893", 
+     col_names = FALSE)
+
+ov_3rd <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049788.1.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526894", 
+     col_names = FALSE)
+
+ov_4th <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5049789.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526895", 
+     col_names = FALSE)
+```
+
+```{r}
+root <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/small RNA category counts/SRR5713891.fastq.gz.trimmed.fastq.gz.sorted.bam.o1526896", 
+     col_names = FALSE)
+```
+
+```{r}
+sample_des <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/sample_des_revision.xlsx")
+```
+
+#put them together
+```{r}
+smRNA_comp <- SP5b %>% 
+  cbind(SP5c) %>% 
+  cbind(BS1) %>% 
+  cbind(BS2) %>% 
+  cbind(BS4a) %>% 
+  cbind(BS4b) %>% 
+  cbind(BS6a) %>% 
+  cbind(BS6b) %>% 
+  cbind(B15) %>% 
+  cbind(B20) %>% 
+  cbind(B25) %>% 
+  cbind(SD4) %>% 
+  cbind(E9a) %>% 
+  cbind(E9b) %>% 
+  cbind(E9c) %>% 
+  cbind(E2) %>% 
+  cbind(E3) %>% 
+  cbind(E4) %>% 
+  cbind(OV1a) %>% 
+  cbind(OV1b) %>% 
+  cbind(OV2) %>% 
+  cbind(root) %>% 
+  cbind(ddm1) %>% 
+  cbind(ddm1_con) %>% 
+  cbind(drm2) %>% 
+  cbind(drm2_con) %>% 
+  cbind(an_pre) %>%
+  cbind(an_mei) %>%
+  cbind(an_mic) %>%
+  cbind(an_bi) %>%
+  cbind(ov_1st) %>%
+  cbind(ov_2nd) %>%
+  cbind(ov_3rd) %>%
+  cbind(ov_4th) %>%
+  cbind(S3_1) %>%
+  cbind(S3_2) %>%
+  cbind(S3_3) %>%
+  cbind(S5_1) %>%
+  cbind(S5_2) %>%
+  cbind(S5_3) %>%
+  cbind(S7_1) %>%
+  cbind(S7_2) %>%
+  cbind(S7_3) %>% 
+  cbind(em_dry) %>% 
+  cbind(em_12h) %>% 
+  cbind(em_24h) %>% 
+  cbind(en_7DAF) %>% 
+  cbind(em_7DAF) %>% 
+  t() %>% 
+  as.data.frame() %>% 
+  mutate(sample_ID = sample_des$sample_ID)
+
+colnames(smRNA_comp) <- c("total read",
+"minus mRNAs",
+"minus tRNAs",
+"minus NOR RNAs",
+"minus 5S RNAs",
+"minus 21nt phasi loci RNAs",
+"general siRNA",
+"miRNA",
+"tRNA",
+"NOR RNA",
+"5S rRNA",
+"21nt phasiRNA",
+"24nt phasiRNA",
+"sample_ID")
+
+head(smRNA_comp)
+```
+```{r}
+write_excel_csv(smRNA_comp, "smRNA_comp.csv")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
