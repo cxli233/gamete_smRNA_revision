@@ -8,4 +8,4 @@ Please direction all questions to
 
 lukli@ucdavis.edu Chenxin Li Graduate Student Researcher Department of Plant Biology UC Davis
 
-Before running a .Rmd file, please change working directory and edit the data loading section to reflect working directory Alternatively, you can use the "Import Dataset" manu in RStudio (Data can be accessed in "data" folder)
+Before running a .Rmd file, please change working directory and edit the data loading section to reflect working directory Alternatively, you can use the "Import Dataset" manu in RStudio
