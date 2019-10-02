@@ -1,0 +1,13 @@
+-p destination: Broken pipe
+Input and filter stats:
+	Input sequences: 1,332,512
+	Input bases: 41,525,315
+	Input mean length: 31.16
+	Good sequences: 869,588 (65.26%)
+	Good bases: 27,149,176
+	Good mean length: 31.22
+	Bad sequences: 462,924 (34.74%)
+	Bad bases: 14,376,139
+	Bad mean length: 31.06
+	Sequences filtered by specified parameters:
+	derep: 462924
