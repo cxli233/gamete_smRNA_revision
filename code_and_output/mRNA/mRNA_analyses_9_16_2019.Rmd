@@ -1,0 +1,425 @@
+---
+title: "mRNA analyses"
+author: "Chenxin Li"
+date: "March 13, 2018"
+output:
+  html_document:
+    toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(readr)
+library(readxl)
+library(edgeR)
+library(vegan)
+library(splitstackshape)
+library(RColorBrewer)
+library(dynamicTreeCut)
+library(svglite)
+```
+
+#load data
+```{r}
+seedlings <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/mRNA/seedlings.xlsx")
+seedlings <- cSplit(seedlings, 'X1', sep = ".", drop = T) %>% as.data.frame()
+seedlings <- select(seedlings, -X1_2 )
+colnames(seedlings) <- c("seedling1" ,"seedling2", "seedling3", "gene.names")
+sdgrp <- data.frame(c("seedling1", "seedling"),
+                    c("seedling2", "seedling"),
+                    c("seedling3", "seedling")) %>% 
+  t() %>% 
+  as.data.frame()
+colnames(sdgrp) <- c("sample_ID", "sample_type")
+row.names(seedlings) <- seedlings$gene.names
+```
+```{r}
+cts <- read_csv("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/mRNA/count.csv") %>% as.data.frame()
+cts <- cSplit(cts, 'Reads', sep = ".", drop = T) %>% as.data.frame()
+cts <- dplyr::select(cts, -Reads_2)
+colnames(cts) <- c("EC1", "EC2", "EC3", "Sp1", "Sp2", "Sp3", "Ve1", "Ve2", "Ve3", "gene.names")
+```
+```{r}
+zg_cts <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/mRNA/zg_cts.xlsx") %>% as.data.frame()
+zg_cts <- cSplit(zg_cts, "Isoform", sep = ".", drop = T) %>% as.data.frame()
+zg_cts <- dplyr::select(zg_cts, -Isoform_2)
+colnames(zg_cts) <- c("m1dEC1", "m1dEC2", "m1dEC3", "Z2.5_1", "Z2.5_2", "Z2.5_3", "Z5_1", "Z5_2", "Z5_3", "Z9_1", "Z9_2", "Z9_3", "InE1", "InE2", "InE3", "gene.names")
+cts_table <- full_join(cts, zg_cts, by = "gene.names") %>% 
+  full_join(seedlings, by = "gene.names") 
+row.names(cts_table) <- cts_table$gene.names
+```
+```{r}
+zg_sample_des <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/mRNA/zg_sample_des.xlsx") %>% as.data.frame()
+zg_sample_des
+
+```
+
+#normalize
+```{r}
+cts_table[is.na(cts_table)] <- 0
+ 
+```
+```{r}
+y <- DGEList(counts = cts_table %>% 
+               select(-gene.names), group=zg_sample_des$sample_type)
+y$samples
+keep <- rowSums(cpm(y)>1) >= 3 
+#keep genes with >1cpm in at least 3 libraries 
+y <- calcNormFactors(y, method = "upperquartile")
+y <- y[keep, , keep.lib.sizes=FALSE]
+y$samples
+design <- model.matrix(~zg_sample_des$sample_type)
+y <- estimateDisp(y,design)
+plotBCV(y)
+```
+
+#PCA analyses
+```{r}
+cpm <- cpm(y, log =F) %>% as.data.frame()
+logcpm <- cpm(y, log =T) %>% as.data.frame()
+
+write.csv(cpm, "mRNA_cpm.csv")
+adonis((t(log(cpm + 0.5))) ~ sample_type, zg_sample_des, method = "e") 
+
+pc <- prcomp(t(logcpm)) 
+pc_importance <- as.data.frame(t(summary(pc)$importance))
+pc_importance
+
+ggplot(pc_importance, aes(x = 1:length( `Proportion of Variance`), y = `Proportion of Variance`) ) +
+  geom_bar(stat = 'identity') +
+  xlab('dimension') +
+  theme_classic()
+
+ggplot(pc_importance, aes(x = 1:length(`Cumulative Proportion`), y = `Cumulative Proportion`) ) +
+  geom_point() +
+  xlab('dimension') +
+  ylab('cumulative variance') + 
+  ylim(c(0, 1.1))+
+  theme_bw()
+```
+```{r}
+pc_nice <- cbind(zg_sample_des, pc$x)
+ggplot(pc_nice, aes(PC1, PC2, color = sample_type)) +
+  geom_point(size = 4, alpha = 0.8) +
+  labs(x = paste("PC1 (", pc_importance$`Proportion of Variance`[1]*100, "% of Variance)", sep = ""), 
+       y = paste("PC2 (", pc_importance$`Proportion of Variance`[2]*100, "% of Variance)", sep = "")) +
+  guides(color =guide_legend(title="sample type"))+
+  theme_bw()
+```
+```{r}
+pc_nice <- pc_nice %>% 
+  mutate(category = case_when(
+    str_detect(sample_type, pattern = "egg") ~ "egg",
+    str_detect(sample_type, pattern = "sperm cell|pollen vegetative cell") ~ "male germline",
+    str_detect(sample_type, pattern = "zygote") ~ "zygote",
+    str_detect(sample_type, pattern = "seedling") ~ "seedling"
+  ))
+```
+```{r}
+ggplot(pc_nice, aes(PC1, PC2, color = sample_type, shape = category)) +
+  geom_point(size = 4, alpha = 0.8) +
+  labs(x = paste("PC1 (", pc_importance$`Proportion of Variance`[1]*100, "% of Variance)", sep = ""), 
+       y = paste("PC2 (", pc_importance$`Proportion of Variance`[2]*100, "% of Variance)", sep = "")) +
+  guides(color =guide_legend(title="sample type"))+
+  scale_shape_manual(values = c(15:18)) + 
+  theme_bw()
+```
+```{r}
+tree <- hclust(dist(t(logcpm)))
+plot(tree, main = "Hierarchical Clustering Tree")
+```
+
+#TPM table
+```{r}
+elength <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS08/MSU7_filtered_mRNA_lengths.gff", "\t", escape_double = FALSE, trim_ws = TRUE,col_names = FALSE) %>%
+  as.data.frame()
+
+el <- separate(elength, X9, c("A","B", "C"), remove = T, sep = ";") 
+el <- separate(el, B, c("B1","B2"), remove = T, sep = "=") 
+el <- el[,c(4,5,11,13)]
+colnames(el) <- c("start", "end", "gene.names", "exon_length")
+el <- mutate(el, "gene_length" = end - start)
+row.names(el) <- el$gene.names
+el %>% head()
+```
+```{r}
+cts_length <- cts_table %>% 
+  inner_join(el, by = "gene.names") 
+
+row.names(cts_length) <- cts_length$gene.names
+
+cts_length1 <- cts_length %>% 
+  select(-gene.names, -start, -end, -gene_length) 
+RPK <- cts_length1 / (cts_length$exon_length / 1000)
+RPK1 <- RPK %>% 
+  select(-exon_length)
+RPK1
+
+RPK1[is.na(RPK1)] <- 0
+sums <- lapply(RPK1, sum)
+sums1 <- unlist(sums)
+
+sums2 <- sums1 %>% 
+  as.data.frame() 
+sums3 <- mutate(sums2, sample_ID = row.names(sums2))
+
+colnames(sums3) <- c("sum_RPK", "sample_ID")
+sums3
+sums2 <- sums3
+#RPK1
+TPM <- RPK1 %>% 
+  mutate(gene.names = row.names(.)) %>% 
+  mutate(EC1_TPM = EC1 / sums2[1, 1] * 10^6)  %>% 
+  mutate(EC2_TPM = EC2 / sums2[2, 1] * 10^6)  %>% 
+  mutate(EC3_TPM = EC3 / sums2[3, 1] * 10^6)  %>% 
+  mutate(Sp1_TPM = Sp1 / sums2[4, 1] * 10^6)  %>% 
+  mutate(Sp2_TPM = Sp2 / sums2[5, 1] * 10^6)  %>% 
+  mutate(Sp3_TPM = Sp3 / sums2[6, 1] * 10^6)  %>% 
+  mutate(Ve1_TPM = Ve1 / sums2[7, 1] * 10^6)  %>% 
+  mutate(Ve2_TPM = Ve2 / sums2[8, 1] * 10^6)  %>% 
+  mutate(Ve3_TPM = Ve3 / sums2[9, 1] * 10^6)  %>% 
+  mutate(m1dEC1_TPM = m1dEC1 / sums2[10, 1] * 10^6)  %>% 
+  mutate(m1dEC2_TPM = m1dEC2 / sums2[11, 1] * 10^6)  %>% 
+  mutate(m1dEC3_TPM = m1dEC3 / sums2[12, 1] * 10^6)  %>% 
+  mutate(Z2.5_1_TPM = Z2.5_1 / sums2[13, 1] * 10^6)  %>% 
+  mutate(Z2.5_2_TPM = Z2.5_2 / sums2[14, 1] * 10^6)  %>% 
+  mutate(Z2.5_3_TPM = Z2.5_3 / sums2[15, 1] * 10^6)  %>% 
+  mutate(Z5_1_TPM = Z5_1 / sums2[16, 1] * 10^6)  %>% 
+  mutate(Z5_2_TPM = Z5_2 / sums2[17, 1] * 10^6)  %>% 
+  mutate(Z5_3_TPM = Z5_3 / sums2[18, 1] * 10^6)  %>% 
+  mutate(Z9_1_TPM = Z9_1 / sums2[19, 1] * 10^6)  %>% 
+  mutate(Z9_2_TPM = Z9_2 / sums2[20, 1] * 10^6)  %>% 
+  mutate(Z9_3_TPM = Z9_3 / sums2[21, 1] * 10^6)  %>% 
+  mutate(InE1_TPM = InE1 / sums2[22, 1] * 10^6)  %>% 
+  mutate(InE2_TPM = InE2 / sums2[23, 1] * 10^6)  %>% 
+  mutate(InE3_TPM = InE3 / sums2[24, 1] * 10^6)  %>% 
+  mutate(Seedling1_TPM = seedling1 / sums2[25, 1] * 10^6)  %>% 
+  mutate(Seedling2_TPM = seedling2 / sums2[26, 1] * 10^6)  %>% 
+  mutate(Seedling3_TPM = seedling3 / sums2[27, 1] * 10^6)
+
+TPM
+TPM_table <- TPM[, 28:55] 
+colnames(TPM_table) <- c("gene.names", 
+                         "EC1", "EC2", "EC3", 
+                         "Sp1", "Sp2", "Sp3",
+                         "Ve1", "Ve2", "Ve3", 
+                         "m1dEC1", "m1dEC2", "m1dEC3", 
+                         "Z2.5_1", "Z2.5_2", "Z2.5_3",
+                         "Z5_1", "Z5_2", "Z5_3",
+                         "Z9_1", "Z9_2", "Z9_3",
+                         "InE1", "InE2", "InE3", 
+                         "seedling1", "seedling2", "seedling3")
+
+write_excel_csv(TPM_table, "TPM_table.csv")
+write_excel_csv(zg_sample_des, "sample_description_for_mRNA.csv")
+```
+
+```{r}
+TPM_long <- TPM_table %>% 
+  gather("sample_ID", "TPM", 2:28) %>% 
+  mutate(sample_type = case_when(
+    sample_ID == "EC1" |
+      sample_ID == "EC2" | 
+      sample_ID == "EC3" ~ "egg cell", 
+    sample_ID == "Sp1" |
+      sample_ID == "Sp2" | 
+      sample_ID == "Sp3" ~ "sperm cell", 
+    sample_ID == "Ve1" |
+      sample_ID == "Ve2" | 
+      sample_ID == "Ve3" ~ "pollen vegetative cell", 
+    sample_ID == "m1dEC1" |
+      sample_ID == "m1dEC2" | 
+      sample_ID == "m1dEC3" ~ "minus 1 day egg cell", 
+    sample_ID == "Z2.5_1" |
+      sample_ID == "Z2.5_2" | 
+      sample_ID == "Z2.5_3" ~ "zygote 2.5hr", 
+    sample_ID == "Z5_1" |
+      sample_ID == "Z5_2" | 
+      sample_ID == "Z5_3" ~ "zygote 5hr", 
+    sample_ID == "Z9_1" |
+      sample_ID == "Z9_2" | 
+      sample_ID == "Z9_3" ~ "zygote 9hr", 
+    sample_ID == "InE1" |
+      sample_ID == "InE2" | 
+      sample_ID == "InE3" ~ "indica egg", 
+    sample_ID == "seedling1" |
+      sample_ID == "seedling2" | 
+      sample_ID == "seedling3" ~ "seedling"
+  )) %>% 
+  mutate(category = case_when(
+    str_detect(sample_type, pattern = "egg") ~ "egg",
+    str_detect(sample_type, pattern = "sperm cell|pollen vegetative cell") ~ "male germline",
+    str_detect(sample_type, pattern = "zygote") ~ "zygote",
+    str_detect(sample_type, pattern = "seedling") ~ "seedling"
+  )) %>% 
+  mutate(category = factor(category, levels = c("egg", "male germline", "zygote", "seedling")))
+
+tail(TPM_long)
+write_excel_csv(TPM_long, "TPM_long.csv")
+
+#temp <-TPM_long %>% filter(TPM !=0)
+#min(temp$TPM)/2 
+```
+
+#boxplot for TPM
+```{r}
+TPM_s <- TPM_long %>%
+  group_by(gene.names, sample_type) %>% 
+  summarise(mean.TPM = mean(TPM)) %>% 
+  ungroup()
+
+TPM_s %>% head(10)
+```
+```{r}
+TPM_ss <- TPM_long %>%
+  group_by(sample_type) %>% 
+  summarise(median = median(TPM), 
+            upper = quantile(TPM, 0.75), 
+            lower = quantile(TPM, 0,25), 
+            IQR = IQR(TPM),
+            Q95 = quantile(TPM, 0.95)) %>% 
+  ungroup()
+
+TPM_ss
+```
+```{r}
+TPM_s %>% 
+  filter(mean.TPM >= 10) %>% 
+  group_by(sample_type) %>% 
+  count() %>% 
+  inner_join(TPM_s %>% 
+  # filter(mean.TPM >= 10) %>% 
+  group_by(sample_type) %>% 
+  count(),  by = "sample_type") %>% 
+  mutate(tail = n.x / n.y)
+
+
+```
+```{r}
+TPM_ss %>% 
+  filter(sample_type != "indica egg") %>% 
+  filter(sample_type != "minus 1 day egg cell") %>% 
+  ggplot(aes(x = sample_type)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_crossbar(aes(ymin = lower, ymax = upper, y = median, fill = sample_type), alpha = 0.8) +
+  geom_segment(aes(y = upper, yend = upper + 1.5*IQR, x = sample_type, xend = sample_type), size = 0.75) +
+  geom_segment(aes(y = upper + 1.5*IQR, yend = Q95, x = sample_type, xend = sample_type), size = 0.75, linetype = 2) +
+  geom_errorbar(aes(ymin = Q95, ymax = Q95), width = 0.3, size = 1) +
+  scale_fill_manual(values = c(
+    "tomato1", "orange", "seagreen", "dodgerblue2", "violetred2", "violetred3", "violetred4"
+    )) +
+  scale_x_discrete(labels = c(
+    "egg", "pollen VC", "seedling", "sperm", "Z2.5 hrs", "Z5 hrs", "Z9 hrs"
+  )) +
+  scale_y_continuous(breaks = c(20, 40, 60, 80, 100, 120)) +
+  labs(y = "mRNA TPM",
+       x = NULL) +
+  theme_minimal()+
+  theme(legend.position = "none", strip.text.x = element_blank()) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  coord_flip()
+
+ggsave("mRNA_TPM_boxplot.svg", width = 5, height = 5)
+ggsave("mRNA_TPM_boxplot.png", width = 5, height = 5)
+
+```
+
+
+
+
+#RdDM heatmap
+```{r}
+RdDM_gene_lists <- read_excel("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/mRNA/RdDM_gene_lists.xlsx")
+#RdDM_gene_lists
+#TPM_long
+```
+```{r}
+TPM_long_select <- TPM_long %>% 
+  group_by(gene.names, sample_type, category) %>% 
+  summarise(mean.TPM = mean(TPM)) %>% 
+  inner_join(RdDM_gene_lists, by = "gene.names") %>% 
+  mutate(group = factor(group, levels = c("Pol IV assoc.",
+                                                "Pol IV/V assoc.",
+                                                "siRNA",
+                                                "Pol V assoc.",
+                                                "H3K9 methyltransferase",
+                                                "DNA methyltransferase"))) %>% 
+  ungroup()
+```
+```{r}
+head(TPM_long_select)
+```
+```{r}
+TPM_long_select %>% 
+       filter(sample_type == "egg cell" |
+                  sample_type == "sperm cell" |
+                  #sample_type == "pollen vegetative cell" |
+                  sample_type == "seedling"|
+                  category == "zygote") %>% 
+  mutate(sample_type = factor(sample_type, 
+                              levels = c("egg cell", "sperm cell", "pollen vegetative cell", 
+                                         "zygote 2.5hr", "zygote 5hr", "zygote 9hr", 
+                                         "seedling"))) %>%
+  ggplot(aes(x = sample_type, y = putative_function)) +
+  facet_grid(group ~ ., space = "free", scales = "free") + 
+  geom_tile(aes(fill = mean.TPM %>% log10()), alpha = 0.95) +
+  scale_fill_gradientn(colours = brewer.pal(9, "YlOrRd"), na.value = NA) +
+  labs(fill = "log10 TPM",
+       x = "",
+       y = "") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  theme(strip.text.y = element_blank()) 
+```
+```{r}
+TPM_long_select %>% 
+       filter(sample_type == "egg cell" |
+                  sample_type == "sperm cell" |
+                  sample_type == "pollen vegetative cell" |
+                  sample_type == "seedling"|
+                  category == "zygote") %>% 
+  mutate(sample_type = factor(sample_type, 
+                              levels = c("egg cell", "sperm cell", "pollen vegetative cell", 
+                                         "zygote 2.5hr", "zygote 5hr", "zygote 9hr", 
+                                         "seedling"))) %>%
+  ggplot(aes(x = sample_type, y = putative_function)) +
+  facet_grid(group ~ ., space = "free", scales = "free") + 
+  geom_tile(aes(fill = mean.TPM %>% log10()), alpha = 0.95) +
+  scale_fill_gradientn(colours = brewer.pal(9, "YlOrRd"), na.value = NA) +
+  scale_x_discrete(labels = c("egg", "sperm", "pollen VC",
+                              "Z2.5hr", "Z5hr", "Z9hr", "seedling")) +
+  labs(fill = "log10 TPM",
+       x = "",
+       y = "") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust= 1))+
+  theme(strip.text.y = element_blank()) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x=element_text(colour="black")) +
+  theme(axis.text.y=element_text(colour="black"))
+
+ggsave(filename = "RdDM_heatmap.svg", width = 8, height = 8)
+ggsave(filename = "RdDM_heatmap.png", width = 8, height = 8)
+```
+
+
+
+
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
