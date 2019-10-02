@@ -1,0 +1,1433 @@
+---
+title: "Individual_24nt_siRNA_loci_em_en_ov"
+author: "Chenxin Li"
+date: "Sep 18, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+```
+
+#load data
+```{r}
+wt1_em_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt1_em_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt1_em_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt1_em_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+```
+
+```{r}
+wt2_em_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt2_em_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt2_em_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt2_em_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+wt3_em_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt3_em_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt3_em_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt3_em_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+wt1_en_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt1_en_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt1_en_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt1_en_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+wt2_en_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt2_en_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt2_en_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt2_en_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+wt3_en_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt3_en_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt3_en_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt3_en_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+drm_1_em_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_1_em_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_1_em_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_1_em_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+```
+
+```{r}
+drm_2_em_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_2_em_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_2_em_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_2_em_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+drm_3_em_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_3_em_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_3_em_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_3_em_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+drm_1_en_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_1_en_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_1_en_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_1_en_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+drm_2_en_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_2_en_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_2_en_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_2_en_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+drm_3_en_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_3_en_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_3_en_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_3_en_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ov1_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov1_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov1_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov1_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ov2_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov2_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov2_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov2_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ov3_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov3_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov3_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov3_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ov4_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov4_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov4_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov4_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ov5_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov5_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov5_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov5_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ov6_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov6_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov6_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ov6_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+br1_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/br1_S52_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br1_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/br1_S52_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br1_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/br1_S52_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br1_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/br1_S52_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+br2_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/br2_S53_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br2_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/br2_S53_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br2_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/br2_S53_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br2_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/br2_S53_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+br3_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/br3_S54_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br3_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/br3_S54_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br3_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/br3_S54_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br3_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/br3_S54_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+br4_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/br4_S7_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br4_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/br4_S7_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br4_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/br4_S7_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br4_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/br4_S7_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+br5_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/br5_S8_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br5_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/br5_S8_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br5_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/br5_S8_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br5_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/br5_S8_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+br6_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/br6_S9_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br6_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/br6_S9_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br6_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/br6_S9_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+br6_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/br6_S9_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+
+##tidy data
+```{r}
+clean <- function(df){
+  df %>% 
+    select(X1, X4, X13, X14, X15, X21, X22) %>% 
+    filter(X21 > 0.5) %>% 
+    filter(X22 >= 2) %>% 
+    select(-X21, -X22)
+}
+```
+
+```{r}
+wt1_em_egg1 <- wt1_em_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em1") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(wt1_em_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt1_em_sd1 <- wt1_em_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em1") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(wt1_em_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt1_em_sp1 <- wt1_em_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "wt_em1") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(wt1_em_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt1_em_inter1 <- wt1_em_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em1") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(wt1_em_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+wt2_em_egg1 <- wt2_em_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em2") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(wt2_em_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt2_em_sd1 <- wt2_em_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em2") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(wt2_em_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt2_em_sp1 <- wt2_em_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "wt_em2") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(wt2_em_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt2_em_inter1 <- wt2_em_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em2") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(wt2_em_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+wt3_em_egg1 <- wt3_em_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em3") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(wt3_em_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt3_em_sd1 <- wt3_em_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em3") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(wt3_em_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt3_em_sp1 <- wt3_em_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "wt_em3") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(wt3_em_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt3_em_inter1 <- wt3_em_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_em3") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(wt3_em_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+wt1_en_egg1 <- wt1_en_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en1") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(wt1_en_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt1_en_sd1 <- wt1_en_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en1") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(wt1_en_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt1_en_sp1 <- wt1_en_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "wt_en1") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(wt1_en_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt1_en_inter1 <- wt1_en_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en1") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(wt1_en_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+wt2_en_egg1 <- wt2_en_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en2") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(wt2_en_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt2_en_sd1 <- wt2_en_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en2") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(wt2_en_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt2_en_sp1 <- wt2_en_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "wt_en2") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(wt2_en_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt2_en_inter1 <- wt2_en_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en2") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(wt2_en_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+wt3_en_egg1 <- wt3_en_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en3") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(wt3_en_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt3_en_sd1 <- wt3_en_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en3") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(wt3_en_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt3_en_sp1 <- wt3_en_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "wt_en3") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(wt3_en_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+wt3_en_inter1 <- wt3_en_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "wt_en3") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(wt3_en_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+
+
+```{r}
+drm_1_em_egg1 <- drm_1_em_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em1") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(drm_1_em_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_1_em_sd1 <- drm_1_em_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em1") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(drm_1_em_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_1_em_sp1 <- drm_1_em_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "drm_em1") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(drm_1_em_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_1_em_inter1 <- drm_1_em_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em1") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(drm_1_em_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+drm_2_em_egg1 <- drm_2_em_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em2") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(drm_2_em_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_2_em_sd1 <- drm_2_em_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em2") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(drm_2_em_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_2_em_sp1 <- drm_2_em_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "drm_em2") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(drm_2_em_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_2_em_inter1 <- drm_2_em_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em2") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(drm_2_em_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+drm_3_em_egg1 <- drm_3_em_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em3") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(drm_3_em_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_3_em_sd1 <- drm_3_em_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em3") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(drm_3_em_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_3_em_sp1 <- drm_3_em_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "drm_em3") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(drm_3_em_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_3_em_inter1 <- drm_3_em_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_em3") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(drm_3_em_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+drm_1_en_egg1 <- drm_1_en_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en1") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(drm_1_en_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_1_en_sd1 <- drm_1_en_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en1") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(drm_1_en_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_1_en_sp1 <- drm_1_en_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "drm_en1") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(drm_1_en_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_1_en_inter1 <- drm_1_en_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en1") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(drm_1_en_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+drm_2_en_egg1 <- drm_2_en_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en2") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(drm_2_en_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_2_en_sd1 <- drm_2_en_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en2") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(drm_2_en_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_2_en_sp1 <- drm_2_en_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "drm_en2") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(drm_2_en_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_2_en_inter1 <- drm_2_en_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en2") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(drm_2_en_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+drm_3_en_egg1 <- drm_3_en_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en3") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(drm_3_en_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_3_en_sd1 <- drm_3_en_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en3") %>% 
+  mutate(bin = "seedling-specific")  
+
+colnames(drm_3_en_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_3_en_sp1 <- drm_3_en_sp %>% 
+  clean() %>%
+  mutate(sample_ID = "drm_en3") %>% 
+  mutate(bin = "sperm-specific")  
+
+colnames(drm_3_en_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+drm_3_en_inter1 <- drm_3_en_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm_en3") %>% 
+  mutate(bin = "intersect.")  
+
+colnames(drm_3_en_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+ov1_egg1 <- ov1_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov1") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(ov1_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov1_sd1 <- ov1_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov1") %>% 
+  mutate(bin = "seedling-specific") 
+
+colnames(ov1_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov1_sp1 <- ov1_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov1") %>% 
+  mutate(bin = "sperm-specific") 
+
+colnames(ov1_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov1_inter1 <- ov1_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov1") %>% 
+  mutate(bin = "intersect.") 
+
+colnames(ov1_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+ov2_egg1 <- ov2_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov2") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(ov2_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov2_sd1 <- ov2_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov2") %>% 
+  mutate(bin = "seedling-specific") 
+
+colnames(ov2_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov2_sp1 <- ov2_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov2") %>% 
+  mutate(bin = "sperm-specific") 
+
+colnames(ov2_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov2_inter1 <- ov2_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov2") %>% 
+  mutate(bin = "intersect.") 
+
+colnames(ov2_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+ov3_egg1 <- ov3_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov3") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(ov3_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov3_sd1 <- ov3_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov3") %>% 
+  mutate(bin = "seedling-specific") 
+
+colnames(ov3_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov3_sp1 <- ov3_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov3") %>% 
+  mutate(bin = "sperm-specific") 
+
+colnames(ov3_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov3_inter1 <- ov3_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov3") %>% 
+  mutate(bin = "intersect.") 
+
+colnames(ov3_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+ov4_egg1 <- ov4_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov4") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(ov4_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov4_sd1 <- ov4_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov4") %>% 
+  mutate(bin = "seedling-specific") 
+
+colnames(ov4_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov4_sp1 <- ov4_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov4") %>% 
+  mutate(bin = "sperm-specific") 
+
+colnames(ov4_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov4_inter1 <- ov4_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov4") %>% 
+  mutate(bin = "intersect.") 
+
+colnames(ov4_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+ov5_egg1 <- ov5_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov5") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(ov5_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov5_sd1 <- ov5_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov5") %>% 
+  mutate(bin = "seedling-specific") 
+
+colnames(ov5_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov5_sp1 <- ov5_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov5") %>% 
+  mutate(bin = "sperm-specific") 
+
+colnames(ov5_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov5_inter1 <- ov5_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov5") %>% 
+  mutate(bin = "intersect.") 
+
+colnames(ov5_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+ov6_egg1 <- ov6_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov6") %>% 
+  mutate(bin = "egg-specific") 
+
+colnames(ov6_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov6_sd1 <- ov6_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov6") %>% 
+  mutate(bin = "seedling-specific") 
+
+colnames(ov6_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov6_sp1 <- ov6_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov6") %>% 
+  mutate(bin = "sperm-specific") 
+
+colnames(ov6_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+
+
+ov6_inter1 <- ov6_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "ov6") %>% 
+  mutate(bin = "intersect.") 
+
+colnames(ov6_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+br1_egg1 <- br1_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "br1") %>% 
+  mutate(bin = "egg-specific") 
+colnames(br1_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br1_sd1 <- br1_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "br1") %>% 
+  mutate(bin = "seedling-specific") 
+colnames(br1_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br1_sp1 <- br1_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "br1") %>% 
+  mutate(bin = "sperm-specific") 
+colnames(br1_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br1_inter1 <- br1_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "br1") %>% 
+  mutate(bin = "intersect.") 
+colnames(br1_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+br2_egg1 <- br2_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "br2") %>% 
+  mutate(bin = "egg-specific") 
+colnames(br2_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br2_sd1 <- br2_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "br2") %>% 
+  mutate(bin = "seedling-specific") 
+colnames(br2_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br2_sp1 <- br2_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "br2") %>% 
+  mutate(bin = "sperm-specific") 
+colnames(br2_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br2_inter1 <- br2_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "br2") %>% 
+  mutate(bin = "intersect.") 
+colnames(br2_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+br3_egg1 <- br3_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "br3") %>% 
+  mutate(bin = "egg-specific") 
+colnames(br3_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br3_sd1 <- br3_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "br3") %>% 
+  mutate(bin = "seedling-specific") 
+colnames(br3_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br3_sp1 <- br3_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "br3") %>% 
+  mutate(bin = "sperm-specific") 
+colnames(br3_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br3_inter1 <- br3_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "br3") %>% 
+  mutate(bin = "intersect.") 
+colnames(br3_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+br4_egg1 <- br4_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "br4") %>% 
+  mutate(bin = "egg-specific") 
+colnames(br4_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br4_sd1 <- br4_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "br4") %>% 
+  mutate(bin = "seedling-specific") 
+colnames(br4_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br4_sp1 <- br4_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "br4") %>% 
+  mutate(bin = "sperm-specific") 
+colnames(br4_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br4_inter1 <- br4_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "br4") %>% 
+  mutate(bin = "intersect.") 
+colnames(br4_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+br5_egg1 <- br5_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "br5") %>% 
+  mutate(bin = "egg-specific") 
+colnames(br5_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br5_sd1 <- br5_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "br5") %>% 
+  mutate(bin = "seedling-specific") 
+colnames(br5_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br5_sp1 <- br5_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "br5") %>% 
+  mutate(bin = "sperm-specific") 
+colnames(br5_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br5_inter1 <- br5_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "br5") %>% 
+  mutate(bin = "intersect.") 
+colnames(br5_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+```{r}
+br6_egg1 <- br6_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "br6") %>% 
+  mutate(bin = "egg-specific") 
+colnames(br6_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br6_sd1 <- br6_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "br6") %>% 
+  mutate(bin = "seedling-specific") 
+colnames(br6_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br6_sp1 <- br6_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "br6") %>% 
+  mutate(bin = "sperm-specific") 
+colnames(br6_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+br6_inter1 <- br6_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "br6") %>% 
+  mutate(bin = "intersect.") 
+colnames(br6_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin")
+```
+
+
+```{r}
+g3_full <- rbind(wt1_em_egg1, wt1_em_sd1, wt1_em_sp1, wt1_em_inter1,
+            wt2_em_egg1, wt2_em_sd1, wt2_em_sp1, wt2_em_inter1,
+            wt3_em_egg1, wt3_em_sd1, wt3_em_sp1, wt3_em_inter1,
+            wt1_en_egg1, wt1_en_sd1, wt1_en_sp1, wt1_en_inter1,
+            wt2_en_egg1, wt2_en_sd1, wt2_en_sp1, wt2_en_inter1,
+            wt3_en_egg1, wt3_en_sd1, wt3_en_sp1, wt3_en_inter1,
+            drm_1_em_egg1, drm_1_em_sd1, drm_1_em_sp1, drm_1_em_inter1,
+            drm_2_em_egg1, drm_2_em_sd1, drm_2_em_sp1, drm_2_em_inter1,
+            drm_3_em_egg1, drm_3_em_sd1, drm_3_em_sp1, drm_3_em_inter1,
+            drm_1_en_egg1, drm_1_en_sd1, drm_1_en_sp1, drm_1_en_inter1,
+            drm_2_en_egg1, drm_2_en_sd1, drm_2_en_sp1, drm_2_en_inter1,
+            drm_3_en_egg1, drm_3_en_sd1, drm_3_en_sp1, drm_3_en_inter1,
+            ov1_egg1, ov1_sd1, ov1_sp1, ov1_inter1,
+            ov2_egg1, ov2_sd1, ov2_sp1, ov2_inter1,
+            ov3_egg1, ov3_sd1, ov3_sp1, ov3_inter1,
+            ov4_egg1, ov4_sd1, ov4_sp1, ov4_inter1,
+            ov5_egg1, ov5_sd1, ov5_sp1, ov5_inter1,
+            ov6_egg1, ov6_sd1, ov6_sp1, ov6_inter1,
+            br1_egg1, br1_sd1, br1_sp1, br1_inter1,
+            br2_egg1, br2_sd1, br2_sp1, br2_inter1,
+            br3_egg1, br3_sd1, br3_sp1, br3_inter1,
+            br4_egg1, br4_sd1, br4_sp1, br4_inter1,
+            br5_egg1, br5_sd1, br5_sp1, br5_inter1,
+            br6_egg1, br6_sd1, br6_sp1, br6_inter1
+            ) %>% 
+  mutate(bins = factor(bin, levels = c(
+    "egg-specific",
+    "seedling-specific",
+    "sperm-specific",
+    "intersect."
+  ))) %>% 
+  mutate(sample_type = case_when(
+    str_detect(sample_ID, "em") ~ "embryo",
+    str_detect(sample_ID, "en") ~ "endosperm",
+    str_detect(sample_ID, "ov") ~ "ovary",
+    str_detect(sample_ID, "br") ~ "bract"
+  )) %>% 
+   mutate(sample_type = factor(sample_type, levels = c("embryo", "endosperm", "ovary", "bract"))) %>% 
+  mutate(geno = case_when(
+    str_detect(sample_ID, "wt") ~ "WT",
+    str_detect(sample_ID, "ov") ~ "WT",
+    str_detect(sample_ID, "br") ~ "WT",
+    str_detect(sample_ID, "drm") ~ "drm2"
+  )) %>% 
+  mutate(geno = factor(geno, levels = c("drm2", "WT"))) %>% 
+  gather("context", "methylation", 3:5) %>% 
+  filter(is.na(methylation) == F) 
+```
+
+```{r}
+g3 <- g3_full %>% 
+  group_by(context, sample_type, geno, start, bins) %>% 
+  summarise(methylation = mean(methylation)) %>% 
+  ungroup()
+```
+
+```{r}
+save(g3, file = "g3.rds")
+```
+
+
+```{r}
+g3_s <- g3 %>% 
+  group_by(sample_type, bins, context, geno) %>% 
+  summarise(median = median(methylation),
+            IQR = IQR(methylation),
+            upper = quantile(methylation, 0.75),
+            lower = quantile(methylation, 0.25),
+            UL = quantile(methylation, 0.975),
+            LL = quantile(methylation, 0.025),
+            n = n()) %>% 
+  ungroup()
+
+g3_s %>% filter(context == "mCHH")
+```
+
+#plot
+```{r}
+ axis_line <- data.frame(
+  bins = c(-Inf),
+  sample_type = c("embryo"),
+  sample_type3 = c("embryo"),
+  geno = c("drm2")
+)
+
+axis_line
+```
+
+```{r}
+g3_s %>% 
+  # filter(context == "mCHH") %>% 
+  ggplot(aes(x = bins)) +
+  facet_grid(context ~ sample_type + geno, scales = "free", switch = "both") +
+  geom_vline(data = axis_line, aes(xintercept = bins), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_crossbar(aes(ymin = lower, ymax = upper, y = median, fill = bins), alpha = 0.8) +
+  geom_segment(aes(y = upper, yend = UL, x = bins, xend = bins), size = 0.75) +
+  geom_segment(aes(y = lower, yend = LL, x = bins, xend = bins), size = 0.75) +
+  geom_errorbar(aes(ymin = UL, ymax = UL), width = 0.3, size = 1) +
+  geom_errorbar(aes(ymin = LL, ymax = LL), width = 0.3, size = 1) +
+  scale_fill_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60")) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8)) +
+  labs(x = "methylome",
+       fill = "siRNA loci",
+       y = NULL) +
+  theme_minimal()+
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(text = element_text(size = 18, face="bold", colour = "black")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(colour = "black"))
+
+ggsave(filename = "rice_24nt_bin_meth_em_en_ov_br_box.svg", height = 5, width = 9)
+ggsave(filename = "rice_24nt_bin_meth_em_en_ov_br_box.png", height = 5, width = 9)
+```
+
+```{r}
+g3_s %>% 
+  filter(context == "mCHH") %>% 
+  mutate(sample_type = as.character(sample_type)) %>% 
+  mutate(sample_type2 =  case_when(
+   sample_type == "endosperm" ~ "endo.",
+   sample_type != "endosperm" ~ sample_type
+  )) %>%
+  mutate(sample_type3 = factor(sample_type2, levels = c(
+    "embryo", "endo.", "ovary", "bract"
+  ))) %>%
+  ggplot(aes(x = bins)) +
+  facet_grid(context ~ sample_type3 + geno, scales = "free", switch = "both") +
+  geom_vline(data = axis_line, aes(xintercept = bins), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_crossbar(aes(ymin = lower, ymax = upper, y = median, fill = bins), alpha = 0.8) +
+  geom_segment(aes(y = upper, yend = UL, x = bins, xend = bins), size = 0.75) +
+  geom_segment(aes(y = lower, yend = LL, x = bins, xend = bins), size = 0.75) +
+  geom_errorbar(aes(ymin = UL, ymax = UL), width = 0.3, size = 1) +
+  geom_errorbar(aes(ymin = LL, ymax = LL), width = 0.3, size = 1) +
+  scale_fill_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60")) +
+  scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8)) +
+  labs(x = "methylome",
+       fill = "siRNA loci",
+       y = NULL) +
+  theme_minimal()+
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(text = element_text(size = 18, face="bold", colour = "black")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(colour = "black"))
+
+ggsave(filename = "rice_24nt_bin_meth_em_en_ov_br_box_CHH.svg", height = 4, width = 6.5)
+ggsave(filename = "rice_24nt_bin_meth_em_en_ov_br_box_CHH.png", height = 4, width = 6.5)
+```
+
+#modeling
+
+```{r}
+model_chh_g3 <- glm(methylation ~ bins * sample_type, family = binomial(link = "logit"), data = g3 %>% 
+                   filter(context == "mCHH") %>% 
+                     filter(geno == "WT"))
+```
+
+```{r}
+est_g3 <- emmeans(model_chh_g3, pairwise ~ bins|sample_type)
+
+```
+
+```{r}
+logit <- function(p){log(
+  p / (1-p)
+)}
+invlogit <- function(x){
+  1/(1 + exp(-x))
+}
+```
+
+```{r}
+results_g3 <- CLD(est_g3$emmean, Letters = letters) %>% 
+  as.data.frame() %>% 
+  mutate(mean_mCHH = invlogit(emmean)) %>% 
+  mutate(upper.CL = invlogit(asymp.UCL)) %>% 
+  mutate(lower.CL = invlogit(asymp.LCL)) #%>% 
+  # mutate(tag = paste(geno, sample_type, sep = "_")) %>% 
+  # filter(tag != "drm2_bract") %>% 
+  # filter(tag != "drm2_ovary")
+
+head(results_g3)
+```
+```{r}
+results_g3 %>% 
+  filter(sample_type == "ovary" |
+           sample_type == "bract") 
+```
+
+```{r}
+results_g3 %>% 
+  mutate(bins_f = factor(bins, levels = c(
+    "egg-specific", "seedling-specific", "sperm-specific", "intersect."
+  ))) %>% 
+  ggplot(aes(x = bins_f, y = mean_mCHH)) +
+  facet_grid(. ~ sample_type, switch = "both") +
+  geom_point(aes(color = bins), alpha = 0.8, size = 3) + 
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.3) +
+  geom_text(aes(label = .group, y = mean_mCHH + 0.025), size = 5, fontface = "bold") +
+  scale_color_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60")) +
+  labs(x = "methylome",
+       color = "siRNA loci",
+       y = "estimated mean mCHH") +
+  theme_minimal()+
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(text = element_text(size = 18, face="bold", colour = "black")) +
+  theme(axis.text.x = element_blank()) +
+  theme(axis.text.y = element_text(colour = "black"))
+```
+
+```{r}
+contrast_g3 <- summary(est_g3$contrasts) %>% 
+  as.data.frame()
+
+write_excel_csv(contrast_g3, "constrast_g3.csv")
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

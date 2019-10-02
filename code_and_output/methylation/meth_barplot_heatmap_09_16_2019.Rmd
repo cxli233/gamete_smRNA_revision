@@ -1,0 +1,587 @@
+---
+title: "meth_bar_and_heatmap"
+author: "Chenxin Li"
+date: "March 12, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+```
+
+#load data
+##PBAT
+```{r}
+egg100_1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/egg100.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+sperm1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/sperm1.split.nondir6.sorted.merged.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+CC <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/SRR5014622-28_CC.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")       
+```
+```{r}
+EC <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/SRR5014616-21_EC.split.nondir6.sorted.merged.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+veg1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/veg1_S12_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+veg2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/veg2_S2_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+veg22 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/gametes/vegetative2.split.nondir6.sorted.merged.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+##embryo
+```{r}
+wt1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/embryo/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+wt2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/embryo/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+wt3 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/embryo/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+em52_1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/embryo/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+em52_2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/embryo/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+em52_3 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/embryo/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+##endosperm
+```{r}
+en1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/endosperm/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+en2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/endosperm/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+en3 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/endosperm/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+en52_1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/endosperm/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+en52_2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/endosperm/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+en52_3 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/endosperm/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+##ov
+```{r}
+ov1 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/ovary/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+ov2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/ovary/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+ov3 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/ovary/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+ov4 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/ovary/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+ov5 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/ovary/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+
+ov6 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/ovary/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+
+#arrange/tidy data
+```{r}
+clean <- function(df){
+  df %>% 
+    select(chr, start, mCG, mCHG, mCHH) %>% 
+    gather("context", "methylation", 3:5)
+}
+```
+
+```{r}
+egg100 <- egg100_1 %>% 
+  clean() %>% 
+  mutate(sample_ID = "egg100_1")
+```
+```{r}
+CC <- CC %>% 
+  clean() %>% 
+  mutate(sample_ID = "CC")
+```
+```{r}
+EC <- EC %>% 
+  clean() %>% 
+  mutate(sample_ID = "EC")
+```
+```{r}
+sperm <- sperm1 %>% 
+  clean() %>% 
+  mutate(sample_ID = "sperm1")
+```
+```{r}
+veg1 <- clean(veg1) %>% 
+  mutate(sample_ID = "veg1")
+
+veg2 <- clean(veg2) %>% 
+  mutate(sample_ID = "veg2")
+
+veg22 <- clean(veg22) %>% 
+  mutate(sample_ID = "veg22")
+
+```
+```{r}
+em1 <- clean(wt1) %>% 
+  mutate(sample_ID = "em1") %>% 
+  mutate(genotype = "WT")
+
+em2 <- clean(wt2) %>% 
+  mutate(sample_ID = "em2") %>% 
+  mutate(genotype = "WT")
+
+em3 <- clean(wt3) %>% 
+  mutate(sample_ID = "em3") %>% 
+  mutate(genotype = "WT")
+
+em52_1 <- clean(em52_1) %>% 
+  mutate(sample_ID = "em52_1") %>% 
+  mutate(genotype = "drm2")
+
+em52_2 <- clean(em52_2) %>% 
+  mutate(sample_ID = "em52_2") %>% 
+  mutate(genotype = "drm2")
+
+em52_3 <- clean(em52_3) %>% 
+  mutate(sample_ID = "em52_3") %>% 
+  mutate(genotype = "drm2")
+```
+```{r}
+en1 <- clean(en1) %>% 
+  mutate(sample_ID = "en1") %>% 
+  mutate(genotype = "WT")
+
+en2 <- clean(en2) %>% 
+  mutate(sample_ID = "en2") %>% 
+  mutate(genotype = "WT")
+
+en3 <- clean(en3) %>% 
+  mutate(sample_ID = "en3") %>% 
+  mutate(genotype = "WT")
+
+en52_1 <- clean(en52_1) %>% 
+  mutate(sample_ID = "en52_1") %>% 
+  mutate(genotype = "drm2")
+
+en52_2 <- clean(en52_2) %>% 
+  mutate(sample_ID = "en52_2") %>% 
+  mutate(genotype = "drm2")
+
+en52_3 <- clean(en52_3) %>% 
+  mutate(sample_ID = "en52_3") %>% 
+  mutate(genotype = "drm2")
+```
+
+```{r}
+ov1 <- clean(ov1) %>% 
+  mutate(sample_ID = "ov1") %>% 
+  mutate(genotype = "WT")
+
+ov2 <- clean(ov2) %>% 
+  mutate(sample_ID = "ov2") %>% 
+  mutate(genotype = "WT")
+
+ov3 <- clean(ov3) %>% 
+  mutate(sample_ID = "ov3") %>% 
+  mutate(genotype = "WT")
+
+ov4 <- clean(ov4) %>% 
+  mutate(sample_ID = "ov4") %>% 
+  mutate(genotype = "WT")
+
+ov5 <- clean(ov5) %>% 
+  mutate(sample_ID = "ov5") %>% 
+  mutate(genotype = "WT")
+
+ov6 <- clean(ov6) %>% 
+  mutate(sample_ID = "ov6") %>% 
+  mutate(genotype = "WT")
+
+```
+```{r}
+protoplast <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/miscellaneous/rice-proto.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+proto <- clean(protoplast) %>% 
+  mutate(sample_ID = "protoplast") %>% 
+  mutate(genotype = "WT") 
+```
+```{r}
+wt_leaf <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/miscellaneous/SRR3503136-7.trimmed.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+wt_leaf2 <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/50Kb_bins_methylation/50Kb_bins_methylation/miscellaneous/SRR3503136-7.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.sorted.bam_Oryza_sativa.IRGSP-1.0_50KB.meth")
+```
+```{r}
+wt_leaf <- clean(wt_leaf) %>% 
+  mutate(sample_ID = "leaf") %>% 
+  mutate(genotype = "WT")
+```
+
+```{r}
+g1 <- rbind(CC, EC, egg100, sperm, veg1, veg2, veg22) %>% 
+  mutate(genotype = "WT")
+```
+```{r}
+g3 <- rbind(em1, em2, em3, 
+            em52_1, em52_2, em52_3, 
+            en1, en2, en3, 
+            en52_1, en52_2, en52_3,
+            ov1, ov2, ov3, ov4, ov5, ov6,
+            proto, wt_leaf)
+```
+```{r}
+heatmap_data <- rbind(g1, g3) %>% 
+  mutate(sample_type = case_when(
+    str_detect(sample_ID, "egg") ~ "egg",
+    sample_ID == "EC" ~ "egg Park et al",
+    sample_ID == "CC" ~ "CC Park et al",
+    sample_ID == "sperm1" ~ "sperm", 
+    str_detect(sample_ID, "veg") ~ "pollen VC",
+    str_detect(sample_ID, "em") ~ "embryo",
+    str_detect(sample_ID, "en") ~ "endosperm",
+    str_detect(sample_ID, "ov") ~ "ovary",
+    str_detect(sample_ID, "proto") ~ "leaf protoplast",
+    str_detect(sample_ID, "leaf") ~ "leaf"
+  ))
+```
+#gene density
+```{r}
+gene_dense <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/MSU7_filtered_genes_50Kb.cov", header=FALSE)
+```
+```{r}
+gene_density <- gene_dense %>% 
+  select(V1, V4, V12) %>% 
+  mutate(sample_type = "gene density")
+
+colnames(gene_density) <- c("chr", "start", "genes", "sample_type") 
+head(gene_density)
+```
+```{r}
+ggplot(gene_density,aes(x = start, y = genes)) +
+  facet_grid(sample_type ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_bar(stat = "identity", color = "grey20") +
+  #geom_tile(aes(fill = genes)) +
+  scale_fill_gradient(low = "white", high = "black", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("gene_density.svg", width = 7, height = 1)
+ggsave("gene_density.png", width = 7, height = 1)
+```
+
+```{r}
+gene_density <- gene_density %>% 
+  mutate(genotype = "WT") %>% 
+  mutate(meth = genes) %>% 
+  mutate(context = "genes") %>% 
+  select(chr, start, context, genotype, sample_type, meth)
+```
+
+```{r}
+heatmap_data_s <- heatmap_data %>%
+  filter(is.na(methylation) == F) %>% 
+  group_by(chr, start, context, genotype, sample_type) %>% 
+  summarise(meth = mean(methylation)) %>% 
+  ungroup() %>% 
+  rbind(gene_density) %>% 
+  group_by(context, sample_type, genotype) %>% 
+  mutate(z = (meth - mean(meth)) / sd(meth)) %>% 
+  ungroup() 
+  
+
+head(heatmap_data_s, 10)
+```
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "egg"|
+           sample_type == "leaf" |
+           sample_type == "sperm"|
+           sample_type == "gene density") %>%
+  mutate(sample_type.f = factor(sample_type, levels = c(
+    "gene density", "egg", "leaf", "sperm"
+  ))) %>% 
+  ggplot(aes(x = start, y = z)) +
+  facet_grid(context + sample_type.f ~ chr, scales = "free", space = "free_x", switch = "both") +
+  geom_bar(stat = "identity", aes(fill = sample_type.f), alpha = 0.8) +
+  scale_fill_manual(values = c("grey20", "tomato1", "darkgreen", "dodgerblue2")) + 
+  labs(x = NULL, 
+       y = NULL,
+       fill = NULL) +
+  ylim(c(-2.5, 2.5)) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(axis.text.y = element_blank())+
+  theme(text = element_text(size= 18, face="bold")) 
+  
+ggsave("methylation_z_score.png", height = 7.5, width = 6.5)  
+```
+
+
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "leaf" |
+           sample_type == "gene density") %>%
+  mutate(sample_type.f = factor(sample_type, levels = c(
+    "gene density", "leaf"
+  ))) %>% 
+  ggplot(aes(x = start, y = z)) +
+  facet_grid(context ~ chr, scales = "free", space = "free_x", switch = "both") +
+  geom_bar(stat = "identity", aes(fill = sample_type.f), alpha = 0.8) +
+  geom_vline(xintercept = -0.1) + 
+  scale_fill_manual(values = c("grey20", "darkgreen")) + 
+  labs(x = NULL, 
+       y = NULL,
+       fill = NULL) +
+  ylim(c(-2.5, 2.5)) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_text(size = 18, face = "bold")) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(axis.text.y =element_blank())+
+  theme(text = element_text(size= 18, face="bold")) 
+  
+ggsave("methylation_z_score_leaf.png", height = 7.5, width = 6.5)
+```
+
+#heatmap
+##egg CG
+```{r} 
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "egg") %>% 
+  filter(context == "mCG") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "tomato", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y = element_blank())
+
+ggsave("egg_CG.svg", width = 7, height = 1)
+ggsave("egg_CG.png", width = 7, height = 1)
+```
+##leaf CG
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "leaf") %>% 
+  filter(context == "mCG") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "darkgreen", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("leaf_CG.svg", width = 7, height = 1)
+ggsave("leaf_CG.png", width = 7, height = 1)
+```
+##sperm CG
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "sperm") %>% 
+  filter(context == "mCG") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "dodgerblue2", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("sperm_CG.svg", width = 7, height = 1)
+ggsave("sperm_CG.png", width = 7, height = 1)
+```
+
+
+##egg CHG
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "egg") %>% 
+  filter(context == "mCHG") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "tomato", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y = element_blank())
+
+ggsave("egg_CHG.svg", width = 7, height = 1)
+ggsave("egg_CHG.png", width = 7, height = 1)
+```
+##leaf CHG
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "leaf") %>% 
+  filter(context == "mCHG") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "darkgreen", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("leaf_CHG.svg", width = 7, height = 1)
+ggsave("leaf_CHG.png", width = 7, height = 1)
+```
+##sperm CHG
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "sperm") %>% 
+  filter(context == "mCHG") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "dodgerblue2", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("sperm_CHG.svg", width = 7, height = 1)
+ggsave("sperm_CHG.png", width = 7, height = 1)
+```
+
+
+##egg CHH
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "egg") %>% 
+  filter(context == "mCHH") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "tomato", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y = element_blank())
+
+ggsave("egg_CHH.svg", width = 7, height = 1)
+ggsave("egg_CHH.png", width = 7, height = 1)
+```
+##leaf CHH
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "leaf") %>% 
+  filter(context == "mCHH") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "darkgreen", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("leaf_CHH.svg", width = 7, height = 1)
+ggsave("leaf_CHH.png", width = 7, height = 1)
+```
+##sperm CHH
+```{r}
+heatmap_data_s %>% 
+  filter(genotype == "WT") %>% 
+  filter(sample_type == "sperm") %>% 
+  filter(context == "mCHH") %>% 
+  ggplot(aes(x = start, y = sample_type)) +
+  facet_grid(context ~ chr, scales = "free", space = "free", switch = "both") +
+  geom_tile(aes(fill = meth %>% log10())) +
+  scale_fill_gradient(low = "white", high = "dodgerblue2", na.value = NA) + 
+  labs(x = NULL, 
+       y = NULL) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") + 
+  theme(axis.text.x = element_blank()) +
+  theme(strip.text = element_blank()) +
+  theme(panel.spacing.x = unit(0, "lines")) + 
+  theme(text = element_text(size= 18, face="bold")) +
+  theme(axis.text.y=element_blank())
+
+ggsave("sperm_CHH.svg", width = 7, height = 1)
+ggsave("sperm_CHH.png", width = 7, height = 1)
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

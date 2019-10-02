@@ -1,0 +1,349 @@
+---
+title: "Individual_24_siRNA_loci_meth_leaf"
+author: "Chenxin Li"
+date: "Sep 18, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+```
+
+
+#load data
+```{r}
+wt_in_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/SRR3503136-7_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt_in_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/SRR3503136-7_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt_in_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/SRR3503136-7_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+wt_in_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/SRR3503136-7_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+ddm_in_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/SRR3503134_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ddm_in_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/SRR3503134_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ddm_in_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/SRR3503134_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+ddm_in_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/SRR3503134_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+```{r}
+drm_in_egg <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/egg-specific/SRR3503142_egg-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_in_sd <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/seedling-specific/SRR3503142_seedling-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_in_sp <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/sperm-specific/SRR3503142_sperm-specific_24siRNAs.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+
+drm_in_inter <- read_delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/24nt_loci_meth/intersection/SRR3503142_sperm-seedling-egg_24siRNAs_intersection.meth", 
+    "\t", escape_double = FALSE, col_names = FALSE, 
+    trim_ws = TRUE, skip = 1)
+```
+
+##tidy data
+```{r}
+clean <- function(df){
+  df %>% 
+    select(X1, X4, X13, X14, X15, X21, X22) %>% 
+    filter(X21 > 0.5) %>% 
+    filter(X22 >= 2) %>% 
+    select(-X21, -X22)
+}
+```
+
+```{r}
+wt_in_egg1 <- wt_in_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "WT") %>% 
+  mutate(bin = "egg-specific") %>% 
+  mutate(genotype = "WT")
+
+colnames(wt_in_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+wt_in_sd1 <- wt_in_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "WT") %>% 
+  mutate(bin = "seedling-specific") %>% 
+  mutate(genotype = "WT")
+
+colnames(wt_in_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+wt_in_sp1 <- wt_in_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "WT") %>% 
+  mutate(bin = "sperm-specific") %>% 
+  mutate(genotype = "WT")
+
+colnames(wt_in_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+wt_in_inter1 <- wt_in_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "WT") %>% 
+  mutate(bin = "intersect.") %>% 
+  mutate(genotype = "WT")
+
+colnames(wt_in_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+```
+
+```{r}
+ddm_in_egg1 <- ddm_in_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "ddmab") %>% 
+  mutate(bin = "egg-specific") %>% 
+  mutate(genotype = "ddm1ab")
+
+colnames(ddm_in_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+ddm_in_sd1 <- ddm_in_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "ddmab") %>% 
+  mutate(bin = "seedling-specific") %>% 
+  mutate(genotype = "ddm1ab")
+
+colnames(ddm_in_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+ddm_in_sp1 <- ddm_in_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "ddmab") %>% 
+  mutate(bin = "sperm-specific") %>% 
+  mutate(genotype = "ddm1ab")
+
+colnames(ddm_in_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+ddm_in_inter1 <- ddm_in_inter %>%
+  clean() %>% 
+  mutate(sample_ID = "ddmab") %>% 
+  mutate(bin = "intersect.") %>% 
+  mutate(genotype = "ddm1ab")
+
+colnames(ddm_in_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+```
+
+```{r}
+drm_in_egg1 <- drm_in_egg %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm2") %>% 
+  mutate(bin = "egg-specific") %>% 
+  mutate(genotype = "drm2")
+
+colnames(drm_in_egg1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+drm_in_sd1 <- drm_in_sd %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm2") %>% 
+  mutate(bin = "seedling-specific") %>% 
+  mutate(genotype = "drm2")
+
+colnames(drm_in_sd1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+drm_in_sp1 <- drm_in_sp %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm2") %>% 
+  mutate(bin = "sperm-specific") %>% 
+  mutate(genotype = "drm2")
+
+colnames(drm_in_sp1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+
+drm_in_inter1 <- drm_in_inter %>% 
+  clean() %>% 
+  mutate(sample_ID = "drm2") %>% 
+  mutate(bin = "intersect.") %>% 
+  mutate(genotype = "drm2")
+
+colnames(drm_in_inter1) <- c("chr", "start", "mCG", "mCHG", "mCHH", "sample_ID", "bin", "genotype")
+```
+
+```{r}
+g2 <- rbind(wt_in_egg1, wt_in_sd1, wt_in_sp1, wt_in_inter1,
+            ddm_in_egg1, ddm_in_sd1, ddm_in_sp1, ddm_in_inter1,
+            drm_in_egg1, drm_in_sd1, drm_in_sp1, drm_in_inter1) %>% 
+  gather("context", "methylation", 3:5) %>% 
+  filter(is.na(methylation) == F) %>%
+   mutate(bins = factor(bin, levels = c(
+    "egg-specific",
+    "seedling-specific",
+    "sperm-specific",
+    "intersect."
+  ))) %>% 
+  mutate(genotype = factor(genotype, levels = c("ddm1ab", "drm2", "WT")))
+```
+
+
+```{r}
+g2_s <- g2 %>% 
+  group_by(bins, context, genotype) %>% 
+  summarise(median = median(methylation), 
+            IQR = IQR(methylation), 
+            upper = quantile(methylation, 0.75),
+            lower = quantile(methylation, 0.25),
+            UL = quantile(methylation, 0.975),
+            LL = quantile(methylation, 0.025),
+            n = n()) %>% 
+  ungroup() 
+
+g2_s
+```
+```{r}
+ axis_line <- data.frame(
+  genotype = c(-Inf),
+  bins2 = c("egg-\nspecific\nloci")
+)
+
+axis_line
+```
+
+
+```{r}
+g2_s %>% 
+  mutate(bins1 = case_when(
+    str_detect(bins, "egg") ~ "egg-\nspecific\nloci",
+    str_detect(bins, "seedling") ~ "seedling-\nspecific\nloci",
+    str_detect(bins, "sperm") ~ "sperm-\nspecific\nloci",
+    str_detect(bins, "intersect") ~ "intersect."
+  )) %>% 
+  mutate(genotype2 = case_when(
+    genotype == "ddm1ab" ~ "ddm1",
+    genotype == "drm2" ~ "drm2",
+    genotype == "WT" ~ "WT"
+  )) %>% 
+  mutate(bins2 = factor(bins1, levels = c(
+    "egg-\nspecific\nloci", "seedling-\nspecific\nloci", "sperm-\nspecific\nloci", "intersect."
+  ))) %>% 
+  ggplot(aes(x = genotype2)) +
+  facet_grid(context ~ bins2, scales = "free", switch = "y") +
+  geom_crossbar(aes(ymin = lower, ymax = upper, y = median, fill = genotype2), alpha = 0.8) +
+   geom_vline(data = axis_line, aes(xintercept = genotype), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_segment(aes(y = upper, yend = UL, x = genotype2, xend = genotype2), size = 0.75) +
+  geom_segment(aes(y = lower, yend = LL, x = genotype2, xend = genotype2), size = 0.75) +
+  geom_errorbar(aes(ymin = UL, ymax = UL), width = 0.3, size = 1) +
+  geom_errorbar(aes(ymin = LL, ymax = LL), width = 0.3, size = 1) +
+  scale_y_continuous(breaks = c(0, 0.4, 0.8)) +
+  scale_fill_manual(values = c("red", "blue", "grey40")) +
+  labs(x = "leaf methylome",
+       fill = NULL,
+       y = NULL) +
+  theme_minimal()+
+  theme(legend.position = "bottom", strip.placement = "outside", panel.spacing.y = unit(1, "line")) + 
+  theme(text = element_text(size= 18, face="bold", colour = "black")) +
+  theme(legend.margin = margin(0, 0, 0, 0)) +
+  theme(legend.box.margin = margin(-9, 0, 0, 0)) + 
+  theme(axis.text.x = element_blank()) + 
+  theme(axis.text.y = element_text(colour = "black"))
+
+ggsave(filename = "rice_24nt_bin_meth_ddm1_drm2_box.svg", height = 4.8, width = 4.9)  
+ggsave(filename = "rice_24nt_bin_meth_ddm1_drm2_box.png", height = 4.8, width = 4.9)  
+```
+
+
+
+
+#modeling
+```{r}
+head(g2)
+```
+
+```{r}
+model_chh_g2 <- glm(methylation ~ context * genotype * bin, family = binomial(link = "logit"), data = g2)
+```
+```{r}
+est_g2 <- emmeans(model_chh_g2, pairwise ~ genotype|bin|context)
+
+```
+```{r}
+logit <- function(p){log(
+  p / (1-p)
+)}
+invlogit <- function(x){
+  1/(1 + exp(-x))
+}
+```
+
+```{r}
+results_g2 <- CLD(est_g2$emmean, Letters = letters) %>% 
+  as.data.frame() %>% 
+  mutate(mean_methylation = invlogit(emmean)) %>% 
+  mutate(upper.CL = invlogit(asymp.UCL)) %>% 
+  mutate(lower.CL = invlogit(asymp.LCL))
+
+results_g2
+```
+```{r}
+results_g2 %>% 
+  mutate(bins1 = case_when(
+    str_detect(bin, "egg") ~ "egg-\nspecific\nloci",
+    str_detect(bin, "seedling") ~ "seedling-\nspecific\nloci",
+    str_detect(bin, "sperm") ~ "sperm-\nspecific\nloci",
+    str_detect(bin, "intersect") ~ "intersect."
+  )) %>% 
+  mutate(bins2 = factor(bins1, levels = c(
+    "egg-\nspecific\nloci", "seedling-\nspecific\nloci", "sperm-\nspecific\nloci", "intersect."
+  ))) %>% 
+  ggplot(aes(x = genotype, y = mean_methylation)) +
+  facet_grid(context ~ bins2, scales = "free", switch = "y") +
+  geom_point(aes(color = genotype), alpha = 0.8, size = 3) + 
+  geom_errorbar(aes(ymin = lower.CL, ymax = upper.CL), width = 0.3) +
+  geom_text(aes(label = .group, y = mean_methylation + 0.1), size = 5, fontface = "bold") +
+  scale_color_manual(values = c("red", "blue", "grey40")) +
+  labs(x = "leaf methylome",
+       fill = NULL,
+       y = NULL) +
+  theme_minimal()+
+  theme(legend.position = "none", strip.placement = "outside", panel.spacing.y = unit(1, "line")) + 
+  theme(text = element_text(size= 18, face="bold", colour = "black")) +
+  theme(axis.text.x = element_text(colour = "black", angle = -90, hjust = 0)) +
+  theme(axis.text.y = element_text(colour = "black"))
+```
+```{r}
+contrast_g2 <- summary(est_g2$contrasts) %>% 
+  as.data.frame()
+
+write_excel_csv(contrast_g2, "constrast_g2.csv")
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

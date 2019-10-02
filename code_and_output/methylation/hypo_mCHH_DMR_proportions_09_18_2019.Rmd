@@ -1,0 +1,121 @@
+---
+title: "hypo_mCHH DMR proportions"
+author: "Chenxin Li"
+date: "Sep 19, 2019"
+output:
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(emmeans)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+```
+
+#eligible regions 
+```{r}
+egg_eligible <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/egg-specific.CHH_wt-52_dmr100.txt", 
+    col_names = FALSE)
+
+sperm_eligible <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/sperm-specific.CHH_wt-52_dmr100.txt", 
+    col_names = FALSE)
+
+seedling_eligible <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/seedling-specific.CHH_wt-52_dmr100.txt", 
+    col_names = FALSE)
+
+intersect_eligible <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/intersection.CHH_wt-52_dmr100.txt", 
+    col_names = FALSE)
+```
+```{r}
+genome_eligible <- 1225893
+genome_hypo_CHH <- 479930
+```
+
+```{r}
+eligible <- data.frame(
+  bin = c("egg-\nspecific", "seedling-\nspecific", "sperm-\nspecific", "intersect."),
+  eligible_regions = c(nrow(egg_eligible), nrow(seedling_eligible), nrow(sperm_eligible), nrow(intersect_eligible))
+) %>% 
+  mutate(genome_eligible = genome_eligible) %>% 
+  mutate(genome_hypo_CHH = genome_hypo_CHH)
+
+eligible
+```
+#DMR counts in 24nt loci
+```{r}
+egg_DMR <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/egg-specific.CHH_wt-52_dmr100_hypo_cutoffs_5-0.001-0.25-0.3.txt", 
+    col_names = FALSE)
+
+sperm_DMR <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/sperm-specific.CHH_wt-52_dmr100_hypo_cutoffs_5-0.001-0.25-0.3.txt", 
+    col_names = FALSE)
+
+seedling_DMR <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/seedling-specific.CHH_wt-52_dmr100_hypo_cutoffs_5-0.001-0.25-0.3.txt", 
+    col_names = FALSE)
+
+intersect_DMR <- read_table2("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/DMRs/intersection.CHH_wt-52_dmr100_hypo_cutoffs_5-0.001-0.25-0.3.txt", 
+    col_names = FALSE)
+```
+
+```{r}
+ DMR <- data.frame(
+  bin = c("egg-\nspecific", "seedling-\nspecific", "sperm-\nspecific", "intersect."),
+  hypo_CHH = c(nrow(egg_DMR), nrow(seedling_DMR), nrow(sperm_DMR), nrow(intersect_DMR)) 
+ )
+
+DMR 
+```
+
+#hypergeometric tests
+```{r}
+wt_52 <- DMR %>% 
+  inner_join(eligible, by = "bin") %>% 
+  mutate(bin = factor(bin, levels = c(
+    "egg-\nspecific", "seedling-\nspecific", "sperm-\nspecific", "intersect."
+  ))) %>% 
+  mutate(proportion = hypo_CHH / eligible_regions) %>% 
+  mutate(lower = phyper(q = hypo_CHH, m = genome_hypo_CHH, n = genome_eligible - genome_hypo_CHH, k = eligible_regions)) %>% 
+  mutate(upper = 1 - lower) %>% 
+  mutate(p.value = min(lower, upper) * 2 * nrow(DMR))
+
+wt_52
+```
+#plot
+```{r}
+wt_52 %>% 
+  ggplot(aes(x = bin, y = proportion * 100)) +
+  geom_vline(xintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_bar(stat = "identity", aes(fill = bin), alpha = 0.8) +
+  scale_fill_manual(values = c("tomato1", "seagreen", "dodgerblue", "grey60")) + 
+  geom_hline(yintercept = genome_hypo_CHH/genome_eligible * 100, linetype = 4) +
+  labs(fill = "24nt siRNA loci",
+       color = NULL,
+       x = NULL, 
+       y = "% hypo-CHH DMR\nin drm2 embryo") + 
+  theme_minimal() +
+  theme(legend.position = "none") + 
+  theme(text = element_text(size= 18, face ="bold", colour = "black")) +
+  theme(axis.text.x = element_text(colour = "black", angle = 45, hjust = 1)) +
+  theme(axis.text.y = element_text(colour = "black")) 
+  
+ggsave("mCHH_proportions.svg", height = 4, width = 3.5)
+ggsave("mCHH_proportions.png", height = 4, width = 3.5)
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

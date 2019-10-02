@@ -1,0 +1,815 @@
+---
+title: "DNA methylation metagene"
+author: "Chenxin Li"
+date: "June 25, 2018"
+output: 
+  html_notebook:
+    number_sections: yes
+    toc: yes
+    toc_float: yes
+  html_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(RColorBrewer)
+library(stringr)
+library(svglite)
+library(forcats)
+```
+
+#Group1 - gametes
+##load data
+##upstream
+```{r}
+EC_pub_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/SRR5014616-21_EC.split.nondir6.sorted_MSU7_filtered_genes_upstream.meths") 
+
+CC_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/SRR5014622-28_CC.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_upstream.meths")
+
+e100_1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/egg100.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_upstream.meths")
+
+e100_2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/egg100_2.split.nondir6.sorted_MSU7_filtered_genes_upstream.meths")
+
+sp1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/sperm1.split.nondir6.sorted_MSU7_filtered_genes_upstream.meths")
+
+veg1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/veg1_S12_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_upstream.meths") 
+
+veg2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/veg2_S2_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_upstream.meths")
+
+veg22_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/vegetative2.split.nondir6.sorted_MSU7_filtered_genes_upstream.meths")
+
+sp_kim_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594858_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_upstream.meths")
+
+veg_kim_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594859_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_upstream.meths")
+
+sp_ros_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594860_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_upstream.meths")
+
+veg_ros_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594861_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_upstream.meths")
+```
+
+```{r}
+EC_pub_up <- EC_pub_up %>% 
+  mutate(sample_ID = "egg_pub")
+
+CC_up <- CC_up %>% 
+  mutate(sample_ID = "CC") 
+
+e100_1_up <- e100_1_up %>% 
+  mutate(sample_ID = "egg100_1")
+
+e100_2_up <- e100_2_up %>% 
+  mutate(sample_ID = "egg100_2")
+
+sp1_up <- sp1_up %>% 
+  mutate(sample_ID = "sp1")
+
+veg1_up <- veg1_up %>% 
+  mutate(sample_ID = "veg1")
+
+veg2_up <- veg2_up %>% 
+  mutate(sample_ID = "veg2")
+
+veg22_up <- veg22_up %>% 
+  mutate(sample_ID = "veg22")
+
+sp_kim_up <- sp_kim_up %>% 
+  mutate(sample_ID = "sperm kim WT")
+
+veg_kim_up <- veg_kim_up %>% 
+  mutate(sample_ID = "veg kim WT")
+
+sp_ros_up <- sp_ros_up %>% 
+  mutate(sample_ID = "sperm kim ros")
+
+veg_ros_up <- veg_ros_up %>% 
+  mutate(sample_ID = "veg kim ros")
+```
+```{r}
+upstream <- rbind(EC_pub_up, CC_up, e100_1_up, e100_2_up, sp1_up, veg1_up, veg2_up, veg22_up, sp_kim_up, veg_kim_up, sp_ros_up, veg_ros_up) %>% 
+  mutate(location = "5' end")
+```
+
+##downstream
+```{r}
+EC_pub_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/SRR5014616-21_EC.split.nondir6.sorted_MSU7_filtered_genes_downstream.meths") 
+
+CC_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/SRR5014622-28_CC.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_downstream.meths")
+
+e100_1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/egg100.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_downstream.meths")
+
+e100_2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/egg100_2.split.nondir6.sorted_MSU7_filtered_genes_downstream.meths")
+
+sp1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/sperm1.split.nondir6.sorted_MSU7_filtered_genes_downstream.meths")
+
+veg1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/veg1_S12_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_downstream.meths") 
+
+veg2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/veg2_S2_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.nondir6_MSU7_filtered_genes_downstream.meths")
+
+veg22_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/gametes/vegetative2.split.nondir6.sorted_MSU7_filtered_genes_downstream.meths")
+
+sp_kim_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594858_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_downstream.meths")
+
+veg_kim_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594859_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_downstream.meths")
+
+sp_ros_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594860_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_downstream.meths")
+
+veg_ros_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation May13/metagene_methylation May13/gametes/SRR8594861_1.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz.split.nondir6_MSU7_filtered_genes_downstream.meths")
+```
+
+```{r}
+EC_pub_down <- EC_pub_down %>% 
+  mutate(sample_ID = "egg_pub")
+
+CC_down <- CC_down %>% 
+  mutate(sample_ID = "CC") 
+
+e100_1_down <- e100_1_down %>% 
+  mutate(sample_ID = "egg100_1")
+
+e100_2_down <- e100_2_down %>% 
+  mutate(sample_ID = "egg100_2")
+
+sp1_down <- sp1_down %>% 
+  mutate(sample_ID = "sp1")
+
+veg1_down <- veg1_down %>% 
+  mutate(sample_ID = "veg1")
+
+veg2_down <- veg2_down %>% 
+  mutate(sample_ID = "veg2")
+
+veg22_down <- veg22_down %>% 
+  mutate(sample_ID = "veg22")
+
+sp_kim_down <- sp_kim_down %>% 
+  mutate(sample_ID = "sperm kim WT")
+
+veg_kim_down <- veg_kim_down %>% 
+  mutate(sample_ID = "veg kim WT")
+
+sp_ros_down <- sp_ros_down %>% 
+  mutate(sample_ID = "sperm kim ros")
+
+veg_ros_down <- veg_ros_down %>% 
+  mutate(sample_ID = "veg kim ros")
+```
+
+```{r}
+downstream <- rbind(EC_pub_down, CC_down, e100_1_down, e100_2_down, 
+                    sp1_down, veg1_down, veg2_down, veg22_down,
+                    sp_kim_down, veg_kim_down, sp_ros_down, veg_ros_down) %>% 
+  mutate(location = "3' end")
+```
+
+```{r}
+gene_meth <- rbind(upstream, downstream) %>% 
+  select(-CCH, -coverage..fraction.of.length., -coverage) %>% 
+  mutate(location = factor(location, levels = c("5' end", "3' end"))) %>% 
+  gather("context", "methylation", 2:4) %>%
+  mutate(sample_type = case_when(
+    str_detect(sample_ID, "egg100_1") ~ "egg_1",
+    str_detect(sample_ID, "egg100_2") ~ "egg_2",
+    str_detect(sample_ID, "egg_pub") ~ "egg Park et al",
+    str_detect(sample_ID, "CC") ~ "CC Park et al",
+    str_detect(sample_ID, "sp1") ~ "sperm",
+    str_detect(sample_ID, "veg1|veg2|veg22") ~ "pollen VC",
+    str_detect(sample_ID, "sperm kim WT") ~ "sperm Kim et al",
+    str_detect(sample_ID, "veg kim WT") ~ "pollen VC Kim et al",
+    str_detect(sample_ID, "sperm kim ros") ~ "sperm Kim et al",
+    str_detect(sample_ID, "veg kim ros") ~ "pollen VC Kim et al"
+  )) %>% 
+  mutate(genotype = case_when(
+    str_detect(sample_ID, "ros") ~ "ros1a/+",
+    str_detect(sample_ID, "ros") == F ~ "WT"
+  )) %>% 
+  mutate(class = paste(sample_type, genotype, sep = ":"))
+
+gene_meth
+```
+
+```{r}
+ axis_line <- data.frame(
+  `bin start` = c(-Inf),
+  location = c("5' end")
+)
+
+axis_line
+```
+
+
+
+```{r} 
+f4a <- gene_meth %>% 
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>% 
+  filter(str_detect(sample_ID, "CC") == F) %>% 
+  filter(str_detect(sample_ID, "veg") == F) %>% 
+  #mutate(genotype1 = factor(genotype, levels = c("WT", "ros1a/+"))) %>% 
+  filter(genotype == "WT") %>% 
+ggplot(aes(x = bin.start, y= methylation)) +
+  facet_grid(context1 ~ location, scales = "free", switch = "y")+
+  stat_summary(geom = "line", fun.y = mean, aes(group = sample_type, color = sample_type), 
+               size = 1.3, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000, -2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  labs(x = NULL,
+       y = NULL,
+       color = NULL,
+       linetype = NULL) +
+  guides(colour = guide_legend(ncol = 2)) +
+  scale_color_manual(values = c("tomato4", "tomato1", "tomato1", "dodgerblue2", "dodgerblue4")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", strip.placement = "outside") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black"))
+
+f4a
+
+ggsave(filename = "DNA_meth_metaplot_gamete.svg", width = 5.2, height = 5)
+ggsave(filename = "DNA_meth_metaplot_gamete.png", width = 5.2, height = 5)
+```
+```{r}
+gene_meth %>% 
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>% 
+  filter(sample_type != "pollen VC") %>% 
+  mutate(genotype1 = factor(genotype, levels = c("WT", "ros1a/+"))) %>% 
+  ggplot(aes(x = bin.start, y = methylation), size = 2) +
+  geom_vline(data = axis_line, aes(xintercept = bin.start), size = 2) +
+  geom_hline(yintercept = -Inf, size = 2) +
+  facet_grid(context1 ~ location, scales = "free", switch = "y")+
+  stat_summary(geom = "line", fun.y = mean, aes(group = class, color = sample_type, linetype = genotype1), size = 1, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000, -2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  labs(x = NULL,
+       y = NULL,
+       color = NULL, 
+       linetype = NULL) +
+  guides(colour = guide_legend(ncol = 2)) +
+  scale_color_manual(values = c("black","tomato4", "tomato1", "tomato2", "orange4", "dodgerblue2", "dodgerblue4")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", strip.placement = "outside", legend.box = "vertical", legend.spacing.y = unit(-1, "lines")) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(legend.key.width = unit(2.5, "lines"))
+
+ggsave(filename = "DNA_meth_metaplot_gamete_sup.svg", width = 10, height = 8)
+ggsave(filename = "DNA_meth_metaplot_gamete_sup.png", width = 10, height = 8)
+```
+
+#Group2 - ddm1ab, drm2 and WT leaf from tan et al 2016
+##load data
+##upstream
+```{r}
+tan_WT_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/corrected_ddm_drm2_metagene_methylation/SRR3503136-7_MSU7_filtered_genes_upstream.meths")
+
+tan_ddm_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/corrected_ddm_drm2_metagene_methylation/SRR3503134_MSU7_filtered_genes_upstream.meths")
+  
+tan_drm_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/corrected_ddm_drm2_metagene_methylation/SRR3503142_MSU7_filtered_genes_upstream.meths")
+```
+```{r}
+tan_WT_up <- tan_WT_up %>% 
+  mutate(genotype = "WT")
+
+tan_ddm_up <- tan_ddm_up %>% 
+  mutate(genotype = "ddm1ab")
+
+tan_drm_up <- tan_drm_up %>% 
+  mutate(genotype = "drm2")
+```
+```{r}
+tan_upstream <- rbind(tan_WT_up, tan_drm_up, tan_ddm_up) %>% 
+  mutate(location = "5' end")
+```
+##downstream
+```{r}
+tan_WT_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/corrected_ddm_drm2_metagene_methylation/SRR3503136-7_MSU7_filtered_genes_downstream.meths")
+
+tan_ddm_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/corrected_ddm_drm2_metagene_methylation/SRR3503134_MSU7_filtered_genes_downstream.meths")
+  
+tan_drm_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/CLVS_smRNA_revision/corrected_ddm_drm2_metagene_methylation/SRR3503142_MSU7_filtered_genes_downstream.meths")
+```
+```{r}
+tan_WT_down <- tan_WT_down %>% 
+  mutate(genotype = "WT")
+
+tan_ddm_down <- tan_ddm_down %>% 
+  mutate(genotype = "ddm1ab")
+
+tan_drm_down <- tan_drm_down %>% 
+  mutate(genotype = "drm2")
+```
+```{r}
+tan_downstream <- rbind(tan_WT_down, tan_drm_down, tan_ddm_down) %>% 
+  mutate(location = "3' end")
+```
+
+```{r}
+tan_meth <- rbind(tan_upstream, tan_downstream) %>% 
+  select(-CCH, -coverage..fraction.of.length., -coverage) %>% 
+  mutate(location = factor(location, levels = c("5' end", "3' end"))) %>% 
+  gather("context", "methylation", 2:4)  
+  
+  
+tan_meth 
+```
+```{r}
+tan_meth %>% 
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>%
+  mutate(genotype2 = case_when(
+    genotype == "ddm1ab" ~ "ddm1",
+    genotype == "drm2" ~ "drm2",
+    genotype == "WT" ~ "WT"
+  )) %>% 
+ggplot(aes(x = bin.start, y= methylation)) +
+  facet_grid(context1 ~ location, scales = "free", switch = "y")+
+  geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  stat_summary(geom = "line", fun.y = mean, aes(group = , color = genotype2), size = 1, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000,-2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  labs(x = NULL,
+       y = NULL,
+       color = NULL) +
+  scale_color_manual(values = c("red", "blue", "grey40")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", strip.placement = "outside") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black"))
+
+ggsave(filename = "DNA_meth_metaplot_drm2_ddm1ab.svg", width = 4.7, height = 4.5)
+ggsave(filename = "DNA_meth_metaplot_drm2_ddm1ab.png", width = 4.7, height = 4.5)
+```
+
+```{r}
+tan_meth %>% 
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>%
+  filter(context1 == "mCHH") %>% 
+  filter(genotype == "WT") %>% 
+  ggplot(aes(x = bin.start, y= methylation)) +
+  facet_grid(context1 ~ location, scales = "free", switch = "y")+
+  geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  stat_summary(geom = "line", fun.y = mean, aes(group = , color = genotype), size = 1.25, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000,-2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  labs(x = NULL,
+       y = NULL,
+       color = NULL) +
+  scale_color_manual(values = "seagreen") +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside") +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black"))
+
+ggsave(filename = "DNA_meth_metaplot_WT_leaf.svg", width = 5, height = 4)
+ggsave(filename = "DNA_meth_metaplot_WT_leaf.png", width = 5, height = 4)
+```
+
+
+#Group3 - WT and drm2 endosperms and ovary 
+##load data
+##upstream
+```{r}
+#wt embryos
+wt_em1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+wt_em2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+wt_em3_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+```
+```{r}
+#drm2 52/52 embryos
+drm2_em1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+drm2_em2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+drm2_em3_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+```
+```{r}
+#wt endosperm
+wt_en1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+wt_en2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+wt_en3_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+```
+```{r}
+#drm2 52/52 endosperms
+drm2_en1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+drm2_en2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths") 
+
+drm2_en3_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+```
+```{r}
+#ovary
+ov1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+ov2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+ov3_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+ov4_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+ov5_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+ov6_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+```
+
+```{r}
+br1_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br1_S52_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+br2_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br2_S53_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+br3_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br3_S54_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+br4_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br4_S7_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+br5_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br5_S8_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+
+br6_up <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br6_S9_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_upstream.meths")
+```
+
+
+```{r}
+wt_em1_up <- wt_em1_up %>% 
+  mutate(sample_ID = "WT em1") 
+
+wt_em2_up <- wt_em2_up %>% 
+  mutate(sample_ID = "WT em2")
+
+wt_em3_up <- wt_em3_up %>% 
+  mutate(sample_ID = "WT em3")
+```
+```{r}
+wt_en1_up <- wt_en1_up %>% 
+  mutate(sample_ID = "WT en1") 
+
+wt_en2_up <- wt_en2_up %>% 
+  mutate(sample_ID = "WT en2")
+
+wt_en3_up <- wt_en3_up %>% 
+  mutate(sample_ID = "WT en3")
+```
+```{r}
+drm2_em1_up <- drm2_em1_up %>% 
+  mutate(sample_ID = "drm em1") 
+
+drm2_em2_up <- drm2_em2_up %>% 
+  mutate(sample_ID = "drm em2")
+
+drm2_em3_up <- drm2_em3_up %>% 
+  mutate(sample_ID = "drm em3")
+```
+```{r}
+drm2_en1_up <- drm2_en1_up %>% 
+  mutate(sample_ID = "drm en1") 
+
+drm2_en2_up <- drm2_en2_up %>% 
+  mutate(sample_ID = "drm en2")
+
+drm2_en3_up <- drm2_en3_up %>% 
+  mutate(sample_ID = "drm en3") 
+```
+```{r}
+ov1_up <- ov1_up %>% 
+  mutate(sample_ID = "ov1")
+
+ov2_up <- ov2_up %>% 
+  mutate(sample_ID = "ov2")
+
+ov3_up <- ov3_up %>% 
+  mutate(sample_ID = "ov3")
+
+ov4_up <- ov4_up %>% 
+  mutate(sample_ID = "ov4")
+
+ov5_up <- ov5_up %>% 
+  mutate(sample_ID = "ov5")
+
+ov6_up <- ov6_up %>% 
+  mutate(sample_ID = "ov6")
+
+```
+
+```{r}
+br1_up <- br1_up %>% 
+  mutate(sample_ID = "br1")
+
+br2_up <- br2_up %>% 
+  mutate(sample_ID = "br2")
+
+br3_up <- br3_up %>% 
+  mutate(sample_ID = "br3")
+
+br4_up <- br4_up %>% 
+  mutate(sample_ID = "br4")
+
+br5_up <- br5_up %>% 
+  mutate(sample_ID = "br5")
+
+br6_up <- br6_up %>% 
+  mutate(sample_ID = "br6")
+```
+
+```{r}
+upstream_g3 <- rbind(wt_em1_up, wt_em2_up, wt_em3_up, drm2_em1_up, drm2_em2_up, drm2_em3_up,
+                     wt_en1_up, wt_en2_up, wt_en3_up, drm2_en1_up, drm2_en2_up, drm2_en3_up,
+                     ov1_up, ov2_up, ov3_up, ov4_up, ov5_up, ov6_up,
+                     br1_up, br2_up, br3_up, br4_up, br5_up, br6_up) %>% 
+  mutate(location = "5' end")
+```
+##downstream
+```{r}
+#wt embryos
+wt_em1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/wt1_em_S45_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+wt_em2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/wt2_em_combined.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+wt_em3_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/wt3_em_S47_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+```
+```{r}
+#drm2 52/52 embryos
+drm2_em1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/52_38em_S51_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+drm2_em2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/52_39em_S52_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+drm2_em3_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/embryo/52_40em_S53_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+```
+```{r}
+#wt endosperm
+wt_en1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/wt1_en_S191_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+wt_en2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/wt2_en_S54_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+wt_en3_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/wt3_en_S55_L005_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+```
+```{r}
+#drm2 52/52 endosperms
+drm2_en1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/52_38en_S194_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+drm2_en2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/52_39en_S195_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths") 
+
+drm2_en3_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/endosperm/52_40en_S196_L006_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+```
+```{r}
+#ovary
+ov1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov1_S49_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+ov2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov2_S50_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+ov3_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov3_S51_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+ov4_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov4_S4_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+ov5_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov5_S5_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+ov6_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/ovary/ov6_S6_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+```
+```{r}
+br1_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br1_S52_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+br2_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br2_S53_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+br3_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br3_S54_L003_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+br4_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br4_S7_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+br5_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br5_S8_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+
+br6_down <- read.delim("C:/Users/cxli9/Desktop/Li/PBI/PBI299 (Sundar Lab)/smRNA project/methylation/metagene_methylation Feb25/metagene_methylation Feb25/bract/br6_S9_L001_R1_001.fastq.gz.trimmed.fastq.gz.filtered.fastq.gz_MSU7_filtered_genes_downstream.meths")
+```
+
+```{r}
+wt_em1_down <- wt_em1_down %>% 
+  mutate(sample_ID = "WT em1") 
+
+wt_em2_down <- wt_em2_down %>% 
+  mutate(sample_ID = "WT em2")
+
+wt_em3_down <- wt_em3_down %>% 
+  mutate(sample_ID = "WT em3")
+```
+```{r}
+wt_en1_down <- wt_en1_down %>% 
+  mutate(sample_ID = "WT en1") 
+
+wt_en2_down <- wt_en2_down %>% 
+  mutate(sample_ID = "WT en2")
+
+wt_en3_down <- wt_en3_down %>% 
+  mutate(sample_ID = "WT en3")
+```
+```{r}
+drm2_em1_down <- drm2_em1_down %>% 
+  mutate(sample_ID = "drm em1") 
+
+drm2_em2_down <- drm2_em2_down %>% 
+  mutate(sample_ID = "drm em2")
+
+drm2_em3_down <- drm2_em3_down %>% 
+  mutate(sample_ID = "drm em3")
+```
+```{r}
+drm2_en1_down <- drm2_en1_down %>% 
+  mutate(sample_ID = "drm en1") 
+
+drm2_en2_down <- drm2_en2_down %>% 
+  mutate(sample_ID = "drm en2")
+
+drm2_en3_down <- drm2_en3_down %>% 
+  mutate(sample_ID = "drm en3") 
+```
+```{r}
+ov1_down <- ov1_down %>% 
+  mutate(sample_ID = "ov1")
+
+ov2_down <- ov2_down %>% 
+  mutate(sample_ID = "ov2")
+
+ov3_down <- ov3_down %>% 
+  mutate(sample_ID = "ov3")
+
+ov4_down <- ov4_down %>% 
+  mutate(sample_ID = "ov4")
+
+ov5_down <- ov5_down %>% 
+  mutate(sample_ID = "ov5")
+
+ov6_down <- ov6_down %>% 
+  mutate(sample_ID = "ov6")
+
+```
+```{r}
+br1_down <- br1_down %>% 
+  mutate(sample_ID = "br1")
+
+br2_down <- br2_down %>% 
+  mutate(sample_ID = "br2")
+
+br3_down <- br3_down %>% 
+  mutate(sample_ID = "br3")
+
+br4_down <- br4_down %>% 
+  mutate(sample_ID = "br4")
+
+br5_down <- br5_down %>% 
+  mutate(sample_ID = "br5")
+
+br6_down <- br6_down %>% 
+  mutate(sample_ID = "br6")
+```
+
+```{r}
+downstream_g3 <- rbind(wt_em1_down, wt_em2_down, wt_em3_down, drm2_em1_down, drm2_em2_down, drm2_em3_down,
+                     wt_en1_down, wt_en2_down, wt_en3_down, drm2_en1_down, drm2_en2_down, drm2_en3_down,
+                     ov1_down, ov2_down, ov3_down, ov4_down, ov5_down, ov6_down,
+                     br1_down, br2_down, br3_down, br4_down, br5_down, br6_down) %>% 
+  mutate(location = "3' end")
+```
+
+```{r}
+g3_meth <- rbind(upstream_g3, downstream_g3) %>% 
+  select(-CCH, -coverage..fraction.of.length., -coverage) %>% 
+  mutate(location = factor(location, levels = c("5' end", "3' end"))) %>% 
+  gather("context", "methylation", 2:4) %>%
+  mutate(sample_type = case_when(
+    str_detect(sample_ID, "em") ~ "embryo",
+    str_detect(sample_ID, "en") ~ "endosperm",
+    str_detect(sample_ID, "ov") ~ "ovary",
+    str_detect(sample_ID, "br") ~ "bract"
+  )) %>% 
+  mutate(genotype = case_when(
+    str_detect(sample_ID, "WT") ~ "WT",
+    str_detect(sample_ID, "drm") ~ "drm2 -52",
+    sample_type == "ovary" ~ "WT",
+    sample_type == "bract" ~ "WT"
+  )) %>% 
+  mutate(class = paste(sample_type, genotype, sep = ":"))
+
+g3_meth
+```
+```{r}
+f4b <- g3_meth %>% 
+  mutate(genotype1 = case_when(
+    genotype == "drm2 -52" ~ "drm2",
+    genotype == "WT" ~ "WT"
+  )) %>% 
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>%
+ggplot(aes(x = bin.start, y= methylation)) +
+  facet_grid(context1 ~ location, scales = "free", switch = "y")+
+  stat_summary(geom = "line", fun.y = mean, 
+               aes(group = class, color = sample_type, linetype = genotype1), size = 1.3, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000, -2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  labs(x = NULL,
+       y = NULL,
+       color = NULL,
+       linetype = NULL) +
+  #guides(colour = guide_legend(nrow = 2)) +
+  scale_color_manual(values = c("green4", "magenta3", "lightgoldenrod4", "orangered3")) +
+  scale_linetype_manual(values = c(4, 1)) +
+  theme_minimal() +
+  theme(legend.position = "bottom", strip.placement = "outside", legend.box = "vertical", legend.spacing.y = unit(0, "lines")) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.x = element_text(colour="black")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(legend.key.width = unit(2.5, "lines"))
+
+f4b
+  
+ggsave(filename = "DNA_meth_metaplot_em_en_ov_br.svg", width = 5.2, height = 5)
+ggsave(filename = "DNA_meth_metaplot_em_en_ov_br.svg", width = 5.2, height = 5)
+```
+
+
+
+
+
+
+```{r}
+g1_g3 <- gene_meth %>% 
+  mutate(grouping = "g1") %>% 
+  rbind(g3_meth %>% 
+          mutate(grouping = "g3"))
+```
+
+
+```{r}
+g1_g3 %>%
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>%
+  mutate(genotype1 = case_when(
+    genotype == "drm2 -52" ~ "drm2",
+    genotype == "WT" ~ "WT"
+  )) %>% 
+  filter(genotype != "ros1a/+") %>% 
+  filter(sample_type != "CC Park et al") %>%
+  # filter(sample_type != "bract") %>% 
+  filter(str_detect(sample_type, "pollen") == F) %>%
+  ggplot(aes(x = bin.start, y = methylation)) +
+  geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  facet_grid(context1 ~ grouping + location, scales = "free", switch = "y")+
+  stat_summary(geom = "line", fun.y = mean, aes(group = class, color = sample_type, linetype = genotype1), 
+               size = 1.3, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000, -2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  scale_linetype_manual(values = c(4, 1)) +
+  labs(x = NULL,
+       y = NULL,
+       color = NULL,
+       linetype = NULL) +
+  guides(colour = guide_legend(ncol = 3, nrow = 4)) +
+  scale_color_manual(values = c("tomato4", "tomato1", "tomato2", NA, 
+                                "dodgerblue2", "dodgerblue4", NA, NA, 
+                                "green4", "magenta3", "lightgoldenrod4", "orangered3"
+                                ), limits = c("egg Park et al", "egg_1", "egg_2", "         ",  
+                                   "sperm", "sperm Kim et al", "\r", "                  ", 
+                                   "bract", "embryo", "endosperm", "ovary")) +
+  theme_minimal() +
+  theme(legend.position = "bottom", strip.placement = "outside", legend.box = "vertical", legend.spacing.y = unit(-1, "lines")) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(strip.text.x = element_blank()) +
+  theme(legend.key.width = unit(3, "lines")) +
+  theme(panel.spacing.x  = unit(1, "lines"))
+
+ggsave("fig_4ab_bract.svg", height = 5, width = 10)
+ggsave("fig_4ab_bract.png", height = 5, width = 10)
+```
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
