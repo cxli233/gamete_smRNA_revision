@@ -107,6 +107,18 @@ ggsave("smRNA_comp_overall_old_libraries.svg", width = 4.9, height = 6)
 ggsave("smRNA_comp_overall_old_libraries.png", width = 4.9, height = 6)
 ```
 ```{r}
+smRNA_comp_L %>% 
+  filter(sample_type == "egg"|
+           sample_type == "sperm"|
+           sample_type == "seedling shoot"|
+         #  sample_type == "leaf"|
+         # sample_type == "root"|
+           sample_type == "ovary") %>%
+  group_by(sample_type, RNA_type1) %>% 
+  summarise(mean = mean(pro*100))
+```
+
+```{r}
 levels <- c(
     "leaf", "root", "seedling shoot", 
     "ovary", 
@@ -318,7 +330,7 @@ siRNA_length %>%
   scale_color_manual(values = c("orangered3", "tomato1", "seagreen", "dodgerblue2"),
                      limits = c("ovary", "egg", "seedling shoot", "sperm")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(text = element_text(size= 18, face="bold")) +
@@ -361,7 +373,7 @@ siRNA_length %>%
     "pre-meiotic ovary", "meiotic ovary", 
     "functional\nmegaspore ovary", "8-nuclei\nembryo sac ovary")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(text = element_text(size= 18, face="bold")) +
@@ -407,7 +419,7 @@ siRNA_length %>%
     "bicellular pollen\nanther",
     "sperm")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(text = element_text(size= 18, face="bold")) +
@@ -455,7 +467,7 @@ siRNA_length %>%
     "spikelets\nanther stage 7",
     "sperm")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(text = element_text(size= 18, face="bold")) +
@@ -492,7 +504,7 @@ siRNA_length %>%
                      limits = c("egg", "seedling shoot", "sperm", 
                                 "mature embryo", "12h imbibed embryo", "24h imbibed embryo")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(text = element_text(size= 18, face="bold")) +
@@ -524,7 +536,7 @@ siRNA_length %>%
   scale_color_manual(values = c("seagreen", "magenta", "lightgoldenrod4"),
                      limits = c("seedling shoot", "embryo 7-8 DAF", "endosperm 7-8 DAF")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(text = element_text(size= 18, face="bold")) +

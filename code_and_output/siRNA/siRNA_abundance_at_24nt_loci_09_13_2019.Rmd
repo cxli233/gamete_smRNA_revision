@@ -248,11 +248,15 @@ axis_line
 
 ```{r}
 rbind(loci_1, loci_2) %>% 
-    mutate(bin.f = factor(bin, levels = c(
+    mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+    mutate(bin.f = factor(bin2, levels = c(
     "egg-\nspecific\nloci", 
     "seedling-\nspecific\nloci",
     "sperm-\nspecific\nloci",
-    "intersect."
+    "intersect.\nloci"
   ))) %>%
   filter(norm == "per total siRNA") %>% 
   ggplot(aes(x = length, y = proportion*100 )) +
@@ -264,7 +268,7 @@ rbind(loci_1, loci_2) %>%
   scale_color_manual(values = c("orangered3", "tomato1", "seagreen", "dodgerblue2"),
                      limits = c("ovary", "egg", "seedling shoot", "sperm")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(panel.spacing.y = unit(1, "lines"), strip.placement = "outside") +
@@ -275,41 +279,9 @@ rbind(loci_1, loci_2) %>%
   theme(axis.text.y=element_text(colour = "black")) +
   theme(legend.position = "bottom")
 
-ggsave("siRNA_in_24nt_loci.png", width = 7, height = 4)
-ggsave("siRNA_in_24nt_loci.svg", width = 7, height = 4)
+ggsave("siRNA_in_24nt_loci.png", width = 8, height = 3.8)
+ggsave("siRNA_in_24nt_loci.svg", width = 8, height = 3.8)
 ```
-
-```{r}
-rbind(loci_1, loci_2) %>% 
-    mutate(bin.f = factor(bin, levels = c(
-    "egg-\nspecific\nloci", 
-    "seedling-\nspecific\nloci",
-    "sperm-\nspecific\nloci",
-    "intersect."
-  ))) %>%
-  filter(norm == "per specific length") %>% 
-  ggplot(aes(x = length, y = proportion*100 )) +
-  facet_grid( norm ~ bin.f, scales = "free_y", switch = "y") +
-  geom_vline(data = axis_line, aes(xintercept = length), size = 1.5) +
-  geom_hline(yintercept = -Inf, size = 1.5) +
-  stat_summary(geom = "line", fun.y = mean, aes(group = sample_type, color = sample_type), size = 1.5, alpha = 0.7) +
-  stat_summary(geom = "errorbar",  fun.data = "mean_cl_boot", aes(color = sample_type), position = position_dodge(0.01)) + 
-  scale_color_manual(values = c("orangered3", "tomato1", "seagreen", "dodgerblue2"),
-                     limits = c("ovary", "egg", "seedling shoot", "sperm")) +
-  labs(color = NULL,
-       x = "length/nt",
-       y = "proportion (%)") +
-  theme_minimal() +
-  theme(panel.spacing.y = unit(1, "lines"), strip.placement = "outside") +
-  theme(text = element_text(size= 18, face="bold")) +
-  theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
-  theme(axis.text.y=element_text(colour = "black")) +
-  theme(legend.position = "bottom")
-
-ggsave("siRNA_in_24nt_loci_sup.svg", width = 7, height = 4)
-ggsave("siRNA_in_24nt_loci_sup.png", width = 7, height = 4)
-```
-
 
 
 
@@ -377,20 +349,25 @@ m_tot %>%
     sample_ID == "drm2_con" ~ "DRM2 WT ctrl"
   )) %>% 
   filter(str_detect(sample_ID, "drm2") == F) %>% 
-  mutate(bin.f = factor(bin, levels = c(
+  mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+  mutate(bin.f = factor(bin2, levels = c(
     "egg-\nspecific\nloci", 
     "seedling-\nspecific\nloci",
     "sperm-\nspecific\nloci",
-    "intersect."
+    "intersect.\nloci"
   ))) %>%
   ggplot(aes(x = length, y = proportion*100 )) +
   geom_vline(xintercept = -Inf,  size = 1.5) +
   geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = 0, color = NA) + 
   facet_wrap(~ bin.f, scales = "free_y", ncol = 4) +
   stat_summary(geom = "line", fun.y = mean, aes(group = sample, color = sample), size = 1.5, alpha = 0.7) +
   scale_color_manual(values = c("red","grey10")) +
-  labs(color = NULL,
-       x = "length/nt",
+  labs(color = "siRNA transcriptome",
+       x = "length (nt)",
        y = "% siRNA") +
   theme_minimal() +
   theme(panel.spacing.y = unit(1, "lines"), strip.placement.y = "outside") +
@@ -408,74 +385,11 @@ ggsave("siRNA_in_24nt_loci_ddm1_drm2.png", width = 9, height = 3.9)
 head(m_tot)
 ```
 
-```{r}
-m_tot %>% 
-  mutate(sample = case_when(
-    str_detect(sample_ID, "con") == F ~ sample_ID,
-    sample_ID == "ddm1_con" ~ "DDM1 WT ctrl",
-    sample_ID == "drm2_con" ~ "DRM2 WT ctrl"
-  )) %>% 
-  mutate(bin.f = factor(bin, levels = c(
-    "egg-\nspecific\nloci", 
-    "seedling-\nspecific\nloci",
-    "sperm-\nspecific\nloci",
-    "intersect."
-  ))) %>%
-  filter(length == "24") %>% 
-  ggplot(aes(x = sample, y = proportion * 10^6)) + 
-  geom_vline(xintercept = -Inf,  size = 1.5) +
-  geom_hline(yintercept = -Inf, size = 1.5) +
-  facet_wrap(~bin.f, scales = "free_y", ncol = 4) +
-  geom_bar(stat = "identity", aes(fill = sample), alpha = 0.8) +
-  scale_fill_manual(values = c("red","grey40", "blue", "black")) +
-  labs(fill = NULL,
-       x = NULL,
-       y = "24nt siRNA (RPM)") +
-  theme_minimal() +
-  theme(panel.spacing.y = unit(1, "lines"), strip.placement.y = "outside") +
-  theme(text = element_text(size= 18, face="bold")) +
-  theme(axis.text.x=element_blank()) +
-  theme(axis.text.y=element_text(colour = "black")) +
-  theme(legend.position = "bottom")
-
-ggsave("siRNA_in_24nt_loci_ddm1_drm2_bar.svg", width = 9, height = 3.8)
-ggsave("siRNA_in_24nt_loci_ddm1_drm2_bar.png", width = 9, height = 3.8)
-```
 
 
 
-```{r}
-m_lengths %>% 
-  mutate(sample = case_when(
-    str_detect(sample_ID, "con") == F ~ sample_ID,
-    sample_ID == "ddm1_con" ~ "DDM1 WT ctrl",
-    sample_ID == "drm2_con" ~ "DRM2 WT ctrl"
-  )) %>% 
-  mutate(bin.f = factor(bin, levels = c(
-    "egg-\nspecific\nloci", 
-    "seedling-\nspecific\nloci",
-    "sperm-\nspecific\nloci",
-    "intersect."
-  ))) %>%
-  ggplot(aes(x = length, y = proportion*100 )) +
-  geom_vline(xintercept = -Inf,  size = 1.5) +
-  geom_hline(yintercept = -Inf, size = 1.5) +
-  facet_wrap(~ bin.f, scales = "free_y", ncol = 4) +
-  stat_summary(geom = "line", fun.y = mean, aes(group = sample, color = sample), size = 1.5, alpha = 0.7) +
-  scale_color_manual(values = c("red","grey40", "blue", "black")) +
-  labs(color = NULL,
-       x = "length/nt",
-       y = "proportion (%)\nper specific length") +
-  theme_minimal() +
-  theme(panel.spacing.y = unit(1, "lines"), strip.placement.y = "outside") +
-  theme(text = element_text(size= 18, face="bold")) +
-  theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
-  theme(axis.text.y=element_text(colour = "black")) +
-  theme(legend.position = "bottom")
 
-ggsave("siRNA_in_24nt_loci_ddm1_drm2_sup.svg", width = 9, height = 4)
-ggsave("siRNA_in_24nt_loci_ddm1_drm2_sup.png", width = 9, height = 4)
-```
+
 
 #other samples
 ```{r}
@@ -535,11 +449,15 @@ loci_2_sup
 ```{r}
 #female
 loci_2_sup %>% 
-  mutate(bin.f = factor(bin, levels = c(
+  mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+  mutate(bin.f = factor(bin2, levels = c(
     "egg-\nspecific\nloci", 
     "seedling-\nspecific\nloci",
     "sperm-\nspecific\nloci",
-    "intersect."
+    "intersect.\nloci"
   ))) %>% 
   filter(sample_type == "seedling shoot" |
           str_detect(sample_ID, "ov_")) %>% 
@@ -562,15 +480,17 @@ loci_2_sup %>%
     "pre-meiotic ovary", "meiotic ovary", 
     "functional\nmegaspore ovary", "8-nuclei\nembryo sac\novary")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   guides(color = guide_legend(nrow = 2)) +
   theme_minimal() +
   theme(panel.spacing.y = unit(1, "lines"), strip.placement = "outside") +
-  theme(strip.text = element_blank()) +
+  theme(strip.text.y = element_blank()) +
   theme(text = element_text(size= 18, face="bold")) +
   theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
   theme(axis.text.y=element_text(colour = "black")) +
+  theme(legend.margin = margin(0, 0, 0, 0)) +
+  theme(legend.box.margin = margin(-12, 0, 0, 0)) + 
   theme(legend.position = "bottom")
 
 ggsave("siRNA_in_24nt_loci_fe.png", width = 7, height = 3.5)
@@ -579,11 +499,15 @@ ggsave("siRNA_in_24nt_loci_fe.svg", width = 7, height = 3.5)
 ```{r}
 #male
 loci_2_sup %>% 
-  mutate(bin.f = factor(bin, levels = c(
+  mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+  mutate(bin.f = factor(bin2, levels = c(
     "egg-\nspecific\nloci", 
     "seedling-\nspecific\nloci",
     "sperm-\nspecific\nloci",
-    "intersect."
+    "intersect.\nloci"
   ))) %>% 
   filter(sample_type == "seedling shoot" |
           str_detect(sample_ID, "an_")) %>% 
@@ -607,15 +531,17 @@ loci_2_sup %>%
     "microspore anther",
     "bicellular\npollen\nanther")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   guides(color = guide_legend(nrow = 2)) +
   theme_minimal() +
   theme(panel.spacing.y = unit(1, "lines"), strip.placement = "outside") +
   theme(text = element_text(size= 18, face="bold")) +
-  theme(strip.text = element_blank()) +
+  theme(strip.text.y = element_blank()) +
   theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
   theme(axis.text.y=element_text(colour = "black")) +
+  theme(legend.margin = margin(0, 0, 0, 0)) +
+  theme(legend.box.margin = margin(-12, 0, 0, 0)) + 
   theme(legend.position = "bottom")
 
 ggsave("siRNA_in_24nt_loci_anther.png", width = 7, height = 3.5)
@@ -624,11 +550,15 @@ ggsave("siRNA_in_24nt_loci_anther.svg", width = 7, height = 3.5)
 ```{r}
 #spikelets
 loci_2_sup %>% 
-  mutate(bin.f = factor(bin, levels = c(
+  mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+  mutate(bin.f = factor(bin2, levels = c(
     "egg-\nspecific\nloci", 
     "seedling-\nspecific\nloci",
     "sperm-\nspecific\nloci",
-    "intersect."
+    "intersect.\nloci"
   ))) %>% 
   filter(str_detect(sample_type, "spike") |
            sample_type == "seedling shoot"
@@ -652,15 +582,17 @@ loci_2_sup %>%
     "spikelets\nanther stage 5",
     "spikelets\nanther stage 7")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   guides(color = guide_legend(nrow = 2)) +
   theme_minimal() +
   theme(panel.spacing.y = unit(1, "lines"), strip.placement = "outside") +
   theme(text = element_text(size= 18, face="bold")) +
-  theme(strip.text = element_blank()) +
+  theme(strip.text.y = element_blank()) +
   theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
   theme(axis.text.y=element_text(colour = "black")) +
+  theme(legend.margin = margin(0, 0, 0, 0)) +
+  theme(legend.box.margin = margin(-12, 0, 0, 0)) + 
   theme(legend.position = "bottom") 
 
 ggsave("siRNA_in_24nt_loci_spik.png", width = 7, height = 3.5)
@@ -669,11 +601,15 @@ ggsave("siRNA_in_24nt_loci_spik.svg", width = 7, height = 3.5)
 ```{r}
 #em_en
 loci_2_sup %>% 
-  mutate(bin.f = factor(bin, levels = c(
+  mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+  mutate(bin.f = factor(bin2, levels = c(
     "egg-\nspecific\nloci", 
     "seedling-\nspecific\nloci",
     "sperm-\nspecific\nloci",
-    "intersect."
+    "intersect.\nloci"
   ))) %>% 
   filter(sample_type == "seedling shoot"|
            sample_type == "embryo 7-8 DAF"|
@@ -692,15 +628,17 @@ loci_2_sup %>%
   scale_color_manual(values = c("seagreen", "magenta", "lightgoldenrod4"),
                      limits = c("seedling\nshoot", "embryo\n7-8 DAF", "endosperm\n7-8 DAF")) +
   labs(color = NULL,
-       x = "length/nt",
+       x = "length (nt)",
        y = "% siRNA") +
   guides(color = guide_legend(nrow = 1)) +
   theme_minimal() +
   theme(panel.spacing.y = unit(1, "lines"), strip.placement = "outside") +
   theme(text = element_text(size= 18, face="bold")) +
-  theme(strip.text = element_blank()) +
+  theme(strip.text.y = element_blank()) +
   theme(axis.text.x=element_text(colour = "black", angle = 45, hjust = 1)) +
   theme(axis.text.y=element_text(colour = "black")) +
+  theme(legend.margin = margin(0, 0, 0, 0)) +
+  theme(legend.box.margin = margin(-12, 0, 0, 0)) + 
   theme(legend.position = "bottom") 
 
 ggsave("siRNA_in_24nt_loci_em_en.png", width = 7, height = 3.5)

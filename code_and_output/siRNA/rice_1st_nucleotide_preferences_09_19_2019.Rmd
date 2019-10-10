@@ -91,9 +91,9 @@ first_n_l  %>%
   geom_hline(yintercept = -Inf, size = 1.5) +
   facet_grid(. ~ nt, scales = "free") +
   geom_bar(stat = "identity", aes(fill = nucleotide), position = position_stack(reverse = T)) +
-  labs(x = NULL,
+  labs(x = "siRNA transcriptome",
        fill = NULL, 
-       y = NULL) +
+       y = "5' nt (%)") +
   scale_fill_brewer(palette = "Set2") +
   theme_minimal()+
   theme(legend.position = "bottom") +
@@ -101,8 +101,8 @@ first_n_l  %>%
   theme(axis.text.x = element_text(colour="black", angle = 45, hjust = 1)) +
   theme(axis.text.y = element_text(colour="black"))
 
-ggsave(filename = "first_nucleotide_ECSDSP.svg", width = 3.35, height = 4)
-ggsave(filename = "first_nucleotide_ECSDSP.png", width = 3.35, height = 4)
+ggsave(filename = "first_nucleotide_ECSDSP.svg", width = 4, height = 4)
+ggsave(filename = "first_nucleotide_ECSDSP.png", width = 4, height = 4)
 ```
 
 
@@ -115,12 +115,6 @@ first_n_l
 ```{r}
 first_by_bin_l <- first_n_l %>% 
   filter(str_detect(bin, "specific|intersect.")) %>% 
-  mutate(bin = factor(bin, levels = c(
-    "egg-\nspecific\nloci", 
-    "seedling-\nspecific\nloci",
-    "sperm-\nspecific\nloci",
-    "intersect."
-  ))) %>%
   group_by(sample_type, length) %>% 
   arrange(desc(nucleotide)) %>% 
   ungroup()
@@ -131,7 +125,7 @@ first_by_bin_l
 ```{r}
 axis_line2 <- data.frame(
   sample_type = c(-Inf),
-  bin = c("egg-\nspecific\nloci"),
+  bin3 = c("egg-\nspecific\nloci"),
   nt = c("24")
 )
 
@@ -140,14 +134,24 @@ axis_line2
 
 ```{r}
 first_by_bin_l %>%
+  mutate(bin2 = case_when(
+      bin == "intersect." ~ "intersect.\nloci",
+      bin != "intersect." ~ bin
+    )) %>% 
+   mutate(bin3 = factor(bin2, levels = c(
+    "egg-\nspecific\nloci", 
+    "seedling-\nspecific\nloci",
+    "sperm-\nspecific\nloci",
+    "intersect.\nloci"
+  ))) %>%
   filter(length == 24) %>% 
   ggplot(aes(x = sample_type, y = proportion)) +
-  facet_grid(. ~ bin, scales = "free", space = "free") +
+  facet_grid(. ~ bin3, scales = "free", space = "free") +
   geom_vline(data = axis_line2, aes(xintercept = sample_type), size = 1.5) +
   geom_hline(yintercept = -Inf, size = 1.5) +
   geom_bar(stat = "identity", aes(fill = nucleotide), position = position_stack(reverse = T)) +
-  labs(x = NULL,
-       y = "% reads",
+  labs(x = "siRNA transcriptome", 
+       y = "5' nt (%)",
        fill = NULL) +
   scale_fill_brewer(palette = "Set2") +
   theme_minimal()+
@@ -156,8 +160,8 @@ first_by_bin_l %>%
   theme(axis.text.x = element_text(colour="black", angle = 45, hjust = 1)) +
   theme(axis.text.y = element_text(colour="black"))
 
-ggsave(filename = "first_nucleotide_by_specificity.svg", width = 5, height = 5)
-ggsave(filename = "first_nucleotide_by_specificity.png", width = 5, height = 5)
+ggsave(filename = "first_nucleotide_by_specificity.svg", width = 5.5, height = 4.5)
+ggsave(filename = "first_nucleotide_by_specificity.png", width = 5.5, height = 4.5)
 ```
 
 

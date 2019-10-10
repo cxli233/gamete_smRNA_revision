@@ -682,7 +682,7 @@ meta %>%
   guides(fill = F) + 
   labs(color = NULL,
        x = NULL, 
-       y = "normalized coverage") + 
+       y = "24nt siRNA coverage") + 
   theme_minimal()+
   theme(legend.position = c(0.78, 0.8)) +
   theme(text = element_text(size = 18, face="bold")) +

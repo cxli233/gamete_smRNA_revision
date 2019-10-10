@@ -99,8 +99,8 @@ left <- table_1_df %>%
   ggplot(aes(y = `loci count`, x = `24nt siRNA loci`)) +
   geom_hline(yintercept = -Inf, size = 1.5) +
   geom_vline(xintercept = -Inf, size = 1.5) +
-  geom_bar(stat = "identity", fill = "steelblue4", color = NA, alpha = 0.8) +
-  geom_text(aes(label = count_text, y = 100), size = 5, fontface = "bold", hjust = 0, vjust = 0.5) +
+  geom_bar(stat = "identity", fill = "grey60", color = NA, alpha = 0.8) +
+  geom_text(aes(label = count_text, y = 100), size = 5, hjust = 0, vjust = 0.5) +
   scale_y_continuous(labels = NULL) +
   scale_x_discrete(labels = NULL) +
   labs(y = NULL,
@@ -120,7 +120,7 @@ mid <- table_1_df %>%
   ggplot(aes(y = `24nt siRNA loci`, x = sample_type)) +
   geom_hline(yintercept = -Inf, size = 1.5) +
   geom_tile(aes(fill = proportion), alpha = 0.8) +
-  geom_text(aes(label = pro_text), size = 5, fontface = "bold") +
+  geom_text(aes(label = pro_text), size = 5) +
   scale_fill_gradient(low = "white", high = "steelblue4") +
   scale_x_discrete(labels = NULL) +
   scale_y_discrete(labels = NULL) +
@@ -140,7 +140,7 @@ right <- table_1_df %>%
   ggplot(aes(y = `24nt siRNA loci`, x = sample_type)) +
   geom_hline(yintercept = -Inf, size = 1.5) +
   geom_tile(aes(fill = enrichment), alpha = 0.8) +
-  geom_text(aes(label = enrich_text), size = 5, fontface = "bold") +
+  geom_text(aes(label = enrich_text), size = 5) +
   scale_x_discrete(labels = NULL) +
   scale_y_discrete(labels = NULL) +
   scale_fill_gradient(low = "white", high = "steelblue4") +
