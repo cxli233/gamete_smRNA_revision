@@ -106,7 +106,7 @@ wt_52 %>%
   labs(fill = "24nt siRNA loci",
        color = NULL,
        x = NULL, 
-       y = "% hypo-CHH DMR\nin drm2 embryo") + 
+       y = "% hypo-CHH DMRs\nin drm2 embryo") + 
   theme_minimal() +
   theme(legend.position = "none") + 
   theme(text = element_text(size= 18, face ="bold", colour = "black")) +

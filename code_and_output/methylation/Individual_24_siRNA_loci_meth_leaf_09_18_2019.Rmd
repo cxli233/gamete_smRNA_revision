@@ -242,7 +242,7 @@ g2_s %>%
     str_detect(bins, "egg") ~ "egg-\nspecific\nloci",
     str_detect(bins, "seedling") ~ "seedling-\nspecific\nloci",
     str_detect(bins, "sperm") ~ "sperm-\nspecific\nloci",
-    str_detect(bins, "intersect") ~ "intersect."
+    str_detect(bins, "intersect") ~ "intersect.\nloci"
   )) %>% 
   mutate(genotype2 = case_when(
     genotype == "ddm1ab" ~ "ddm1",
@@ -250,7 +250,7 @@ g2_s %>%
     genotype == "WT" ~ "WT"
   )) %>% 
   mutate(bins2 = factor(bins1, levels = c(
-    "egg-\nspecific\nloci", "seedling-\nspecific\nloci", "sperm-\nspecific\nloci", "intersect."
+    "egg-\nspecific\nloci", "seedling-\nspecific\nloci", "sperm-\nspecific\nloci", "intersect.\nloci"
   ))) %>% 
   ggplot(aes(x = genotype2)) +
   facet_grid(context ~ bins2, scales = "free", switch = "y") +
@@ -263,7 +263,7 @@ g2_s %>%
   geom_errorbar(aes(ymin = LL, ymax = LL), width = 0.3, size = 1) +
   scale_y_continuous(breaks = c(0, 0.4, 0.8)) +
   scale_fill_manual(values = c("red", "blue", "grey40")) +
-  labs(x = "leaf methylome",
+  labs(x = "methylome",
        fill = NULL,
        y = NULL) +
   theme_minimal()+

@@ -815,16 +815,16 @@ g1_s %>%
   scale_fill_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60")) +
   scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8)) +
   labs(x = "methylome",
-       fill = "siRNA loci",
+       fill = "24nt siRNA loci type",
        y = NULL) +
   theme_minimal()+
-  theme(legend.position = "bottom", strip.placement = "outside") + 
+  theme(legend.position = "top", strip.placement = "outside") + 
   theme(text = element_text(size = 18, face="bold", colour = "black")) +
   theme(axis.text.x = element_blank()) +
   theme(axis.text.y = element_text(colour = "black"))
 
-ggsave(filename = "rice_24nt_bin_meth_gametes_box_egg_sp_CHH.svg", height = 4, width = 9.5)
-ggsave(filename = "rice_24nt_bin_meth_gametes_box_egg_sp_CHH.png", height = 4, width = 9.5)
+ggsave(filename = "rice_24nt_bin_meth_gametes_box_egg_sp_CHH.svg", height = 4, width = 9.8)
+ggsave(filename = "rice_24nt_bin_meth_gametes_box_egg_sp_CHH.png", height = 4, width = 9.8)
 ```
 
 
@@ -869,10 +869,10 @@ g1_s_full %>%
   scale_fill_manual(values = c("tomato1", "seagreen", "dodgerblue2", "grey60")) +
   scale_y_continuous(breaks = c(0, 0.2, 0.4, 0.6, 0.8)) +
   labs(x = "methylome",
-       fill = "siRNA loci",
+       fill = "24nt siRNA loci type",
        y = NULL) +
   theme_minimal()+
-  theme(legend.position = "bottom", strip.placement = "outside") + 
+  theme(legend.position = "top", strip.placement = "outside") + 
   theme(text = element_text(size = 18, face="bold", colour = "black")) +
   theme(axis.text.x = element_blank()) +
   theme(axis.text.y = element_text(colour = "black"))
@@ -931,7 +931,7 @@ results_g1 %>%
        color = "siRNA loci",
        y = "estimated mean mCHH") +
   theme_minimal()+
-  theme(legend.position = "bottom", strip.placement = "outside") + 
+  theme(legend.position = "top", strip.placement = "outside") + 
   theme(text = element_text(size = 18, face="bold", colour = "black")) +
   theme(axis.text.x = element_blank()) +
   theme(axis.text.y = element_text(colour = "black"))

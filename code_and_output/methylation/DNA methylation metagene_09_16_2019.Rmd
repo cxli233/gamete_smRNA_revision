@@ -343,11 +343,12 @@ ggplot(aes(x = bin.start, y= methylation)) +
   facet_grid(context1 ~ location, scales = "free", switch = "y")+
   geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
   geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = 0, color = NA) +
   stat_summary(geom = "line", fun.y = mean, aes(group = , color = genotype2), size = 1, alpha = 0.8) +
   scale_x_continuous(breaks = c(-3000,-2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
   labs(x = NULL,
        y = NULL,
-       color = NULL) +
+       color = "methylome") +
   scale_color_manual(values = c("red", "blue", "grey40")) +
   theme_minimal() +
   theme(legend.position = "bottom", strip.placement = "outside") +
@@ -781,6 +782,7 @@ g1_g3 %>%
   ggplot(aes(x = bin.start, y = methylation)) +
   geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
   geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = 0, color = NA) + 
   facet_grid(context1 ~ grouping + location, scales = "free", switch = "y")+
   stat_summary(geom = "line", fun.y = mean, aes(group = class, color = sample_type, linetype = genotype1), 
                size = 1.3, alpha = 0.8) +
