@@ -735,8 +735,10 @@ ggplot(aes(x = bin.start, y= methylation)) +
        y = NULL,
        color = NULL,
        linetype = NULL) +
-  #guides(colour = guide_legend(nrow = 2)) +
-  scale_color_manual(values = c("green4", "magenta3", "lightgoldenrod4", "orangered3")) +
+  guides(color = guide_legend(order = 1, ncol = 2),
+         linetype = guide_legend(order = 2), ncol = 2) +
+  scale_color_manual(values = c("green4", "magenta3", "orangered3", "lightgoldenrod4"),
+                     limits = c("bract", "embryo", "ovary", "endosperm")) +
   scale_linetype_manual(values = c(4, 1)) +
   theme_minimal() +
   theme(legend.position = "bottom", strip.placement = "outside", legend.box = "vertical", legend.spacing.y = unit(0, "lines")) +
@@ -810,7 +812,70 @@ g1_g3 %>%
 ggsave("fig_4ab_bract.svg", height = 5, width = 10)
 ggsave("fig_4ab_bract.png", height = 5, width = 10)
 ```
+```{r}
+library(cowplot)
+```
 
+```{r}
+ab <- g1_g3 %>%
+  mutate(context1 = case_when(
+    context == "CG" ~ "mCG",
+    context == "CHG" ~ "mCHG",
+    context == "CHH" ~ "mCHH"
+  )) %>%
+  mutate(genotype1 = case_when(
+    genotype == "drm2 -52" ~ "drm2",
+    genotype == "WT" ~ "WT"
+  )) %>% 
+  filter(genotype != "ros1a/+") %>% 
+  filter(sample_type != "CC Park et al") %>%
+  # filter(sample_type != "bract") %>% 
+  filter(str_detect(sample_type, "pollen") == F) %>%
+  ggplot(aes(x = bin.start, y = methylation)) +
+  geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
+  geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = 0, color = NA) + 
+  facet_grid(context1 ~ grouping + location, scales = "free", switch = "y")+
+  stat_summary(geom = "line", fun.y = mean, aes(group = class, color = sample_type, linetype = genotype1), 
+               size = 1.3, alpha = 0.8) +
+  scale_x_continuous(breaks = c(-3000, -2000, -1000, 0, 1000, 2000, 3000), labels = NULL)+
+  scale_linetype_manual(values = c(4, 1)) +
+  labs(x = NULL,
+       y = NULL,
+       color = NULL,
+       linetype = NULL) +
+  guides(colour = guide_legend(ncol = 3, nrow = 4)) +
+  scale_color_manual(values = c("tomato4", "tomato1", "tomato2", NA, 
+                                "dodgerblue2", "dodgerblue4", NA, NA, 
+                                "green4", "magenta3", "lightgoldenrod4", "orangered3"
+                                ), limits = c("egg Park et al", "egg_1", "egg_2", "         ",  
+                                   "sperm", "sperm Kim et al", "\r", "                  ", 
+                                   "bract", "embryo", "endosperm", "ovary")) +
+  theme_minimal() +
+  theme(legend.position = "none", strip.placement = "outside", legend.box = "vertical", legend.spacing.y = unit(-1, "lines")) +
+  theme(text = element_text(size = 18, face="bold")) +
+  theme(axis.text.y = element_text(colour="black")) +
+  theme(strip.text.x = element_blank()) +
+  theme(legend.key.width = unit(3, "lines")) +
+  theme(panel.spacing.x  = unit(1, "lines"))
+
+c <- get_legend(f4a)
+d <- get_legend(f4b)
+```
+
+```{r}
+cd <- plot_grid(NULL, c, NULL, d, NULL, 
+          rel_widths = c(0.25 ,1, 0, 1, 0.03), 
+          nrow = 1)
+
+plot_grid(ab,NULL, cd, 
+          rel_heights = c(1, 0.4, 1), 
+          rel_widths = c(1, 0.1, 1), 
+          nrow = 2)
+
+ggsave("fig4ab_new.svg", height = 5, width = 10)
+ggsave("fig4ab_new.png", height = 5, width = 10)
+```
 
 
 
