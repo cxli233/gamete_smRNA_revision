@@ -1,1 +1,9 @@
 codes related to DNA methylation
+BS2_GFF_methylator6.py 
+uses the information in a BS-Seeker2 ATCGmap file to determine the mean methylation level in every feature in a GFF file.
+
+BS2_GFF_range_methylator6.py 
+uses the information in a BS-Seeker2 ATCGmap file to determine the mean methylation level in and near every feature in a GFF file, 
+broken into non-overlapping intervals of a set size.
+
+The .py files were written by Dr. Jonathan Gent at University of Georgia, gent@uga.edu 
