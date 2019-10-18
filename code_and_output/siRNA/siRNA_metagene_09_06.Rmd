@@ -671,6 +671,7 @@ meta %>%
   facet_grid(.~location, scales = "free_x")+
   geom_vline(data = axis_line, aes(xintercept = bin.start), size = 1.5) +
   geom_hline(yintercept = -Inf, size = 1.5) +
+  geom_hline(yintercept = 0, size = 1.5, color = NA) +
   stat_summary(geom = "ribbon",  fun.data = "mean_cl_boot", aes(fill = sample_type), alpha = 0.3) +
   stat_summary(geom = "line", fun.y = mean, aes(group = sample_type, color = sample_type), size = 1.25, alpha = 0.8) +
   scale_x_continuous(breaks = c(-3000,-2000,-1000, 0, 1000, 2000, 2900),
